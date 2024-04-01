@@ -1,39 +1,94 @@
-class ProductManager {
-  constructor(filePath) {
-    this.path = filePath;
-  }
+const ProductManager = require('./ProductManager');
 
-  async loadProducts() {
-    try {
-      const data = await fs.readFile(this.path, 'utf8');
-      this.products = JSON.parse(data);
-    } catch (error) {
-      this.products = [];
-    }
-  }
+const productManager = new ProductManager('products.json');
 
-  async saveProducts() {
-    await fs.writeFile(this.path, JSON.stringify(this.products, null, 2));
+// Obtener todos los productos
+exports.getAllProducts = async (req, res) => {
+  try {
+    let limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+    const products = await productManager.getProducts(limit);
+    res.json(products);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
+};
 
-  async addProduct(title, description, price, thumbnail, code, stock) {
-    // Implementación omitida por brevedad
-  }
-
-  async getProducts(limit) {
-    await this.loadProducts();
-    if (limit !== undefined) {
-      return this.products.slice(0, limit);
+// Obtener un producto por su ID
+exports.getProductById = async (req, res) => {
+  try {
+    const productId = parseInt(req.params.pid);
+    const product = await productManager.getProductById(productId);
+    if (product) {
+      res.json(product);
     } else {
-      return this.products;
+      res.status(404).json({ error: 'Product not found' });
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
+};
 
-  async getProductById(id) {
-    await this.loadProducts();
-    const product = this.products.find(product => product.id === id);
-    return product;
+// Agregar un nuevo producto
+exports.addProduct = async (req, res) => {
+  try {
+    const { title, description, price, thumbnail, code, stock, category, thumbnails } = req.body;
+    const newProduct = await productManager.addProduct({
+      title,
+      description,
+      price,
+      thumbnail,
+      code,
+      stock,
+      category,
+      thumbnails
+    });
+    res.status(201).json(newProduct);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
-}
+};
 
-module.exports = ProductManager;
+// Actualizar un producto
+exports.updateProduct = async (req, res) => {
+  try {
+    const productId = parseInt(req.params.pid);
+    const { title, description, price, thumbnail, code, stock, category, thumbnails } = req.body;
+    const updatedProduct = await productManager.updateProduct(productId, {
+      title,
+      description,
+      price,
+      thumbnail,
+      code,
+      stock,
+      category,
+      thumbnails
+    });
+    if (updatedProduct) {
+      res.json(updatedProduct);
+    } else {
+      res.status(404).json({ error: 'Product not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// Eliminar un producto
+exports.deleteProduct = async (req, res) => {
+  try {
+    const productId = parseInt(req.params.pid);
+    const deletedProduct = await productManager.deleteProduct(productId);
+    if (deletedProduct) {
+      res.json({ message: 'Product deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'Product not found' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};

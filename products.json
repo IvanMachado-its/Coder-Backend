@@ -1,121 +1,112 @@
 [
-    {
-      "id": 1,
-      "title": "Camiseta",
-      "description": "Camiseta de algodón",
-      "price": 15.99,
-      "thumbnail": "https://example.com/camiseta.jpg",
-      "code": "CAM001",
-      "stock": 50
-    },
-    {
-      "id": 2,
-      "title": "Pantalón",
-      "description": "Pantalón vaquero",
-      "price": 29.99,
-      "thumbnail": "https://example.com/pantalon.jpg",
-      "code": "PAN002",
-      "stock": 30
-    },
-    {
-      "id": 3,
-      "title": "Zapatillas",
-      "description": "Zapatillas deportivas",
-      "price": 49.99,
-      "thumbnail": "https://example.com/zapatillas.jpg",
-      "code": "ZAP003",
-      "stock": 20
-    },
-    {
-      "id": 4,
-      "title": "Sudadera con capucha",
-      "description": "Sudadera con capucha de algodón",
-      "price": 39.99,
-      "thumbnail": "https://example.com/sudadera.jpg",
-      "code": "SUD004",
-      "stock": 25
-    },
-    {
-      "id": 5,
-      "title": "Jeans",
-      "description": "Jeans ajustados",
-      "price": 34.99,
-      "thumbnail": "https://example.com/jeans.jpg",
-      "code": "JEAN005",
-      "stock": 40
-    },
-    {
-      "id": 6,
-      "title": "Chaquetón",
-      "description": "Chaquetón acolchado",
-      "price": 69.99,
-      "thumbnail": "https://example.com/chaqueton.jpg",
-      "code": "CHQ006",
-      "stock": 15
-    },
-    {
-      "id": 7,
-      "title": "Gorra",
-      "description": "Gorra de béisbol",
-      "price": 14.99,
-      "thumbnail": "https://example.com/gorra.jpg",
-      "code": "GOR007",
-      "stock": 60
-    },
-    {
-      "id": 8,
-      "title": "Botas de senderismo",
-      "description": "Botas de senderismo resistentes al agua",
-      "price": 79.99,
-      "thumbnail": "https://example.com/botas.jpg",
-      "code": "BOT008",
-      "stock": 20
-    },
-    {
-      "id": 9,
-      "title": "Chaqueta de cuero",
-      "description": "Chaqueta de cuero genuino",
-      "price": 149.99,
-      "thumbnail": "https://example.com/chaqueta-cuero.jpg",
-      "code": "CHQ009",
-      "stock": 10
-    },
-    {
-      "id": 10,
-      "title": "Bufanda de lana",
-      "description": "Bufanda de lana suave y abrigada",
-      "price": 19.99,
-      "thumbnail": "https://example.com/bufanda.jpg",
-      "code": "BUF010",
-      "stock": 35
-    },
-    {
-      "id": 11,
-      "title": "Sudadera sin capucha",
-      "description": "Sudadera de algodón sin capucha",
-      "price": 29.99,
-      "thumbnail": "https://example.com/sudadera-sin-capucha.jpg",
-      "code": "SUD011",
-      "stock": 50
-    },
-    {
-      "id": 12,
-      "title": "Camisa de vestir",
-      "description": "Camisa de vestir de algodón",
-      "price": 44.99,
-      "thumbnail": "https://example.com/camisa-vestir.jpg",
-      "code": "CAM012",
-      "stock": 25
-    },
-    {
-      "id": 13,
-      "title": "Gafas de sol",
-      "description": "Gafas de sol polarizadas",
-      "price": 59.99,
-      "thumbnail": "https://example.com/gafas-sol.jpg",
-      "code": "GAF013",
-      "stock": 30
-    }
-  ]
-  
-  
+  {
+    "id": "1",
+    "title": "Camiseta",
+    "description": "Camiseta de algodón",
+    "code": "CAM001",
+    "price": 15.99,
+    "status": true,
+    "stock": 50,
+    "category": "Ropa",
+    "thumbnails": ["https://example.com/camiseta.jpg"]
+  },
+  {
+    "id": "2",
+    "title": "Pantalón",
+    "description": "Pantalón vaquero",
+    "code": "PAN002",
+    "price": 29.99,
+    "status": true,
+    "stock": 30,
+    "category": "Ropa",
+    "thumbnails": ["https://example.com/pantalon.jpg"]
+  },
+  {
+    "id": "3",
+    "title": "Zapatillas",
+    "description": "Zapatillas deportivas",
+    "code": "ZAP003",
+    "price": 49.99,
+    "status": true,
+    "stock": 20,
+    "category": "Calzado",
+    "thumbnails": ["https://example.com/zapatillas.jpg"]
+  },
+  {
+    "id": "4",
+    "title": "Sudadera",
+    "description": "Sudadera con capucha",
+    "code": "SUD004",
+    "price": 39.99,
+    "status": true,
+    "stock": 25,
+    "category": "Ropa",
+    "thumbnails": ["https://example.com/sudadera.jpg"]
+  },
+  {
+    "id": "5",
+    "title": "Gorra",
+    "description": "Gorra de béisbol",
+    "code": "GOR005",
+    "price": 12.99,
+    "status": true,
+    "stock": 40,
+    "category": "Accesorios",
+    "thumbnails": ["https://example.com/gorra.jpg"]
+  },
+  {
+    "id": "6",
+    "title": "Calcetines",
+    "description": "Calcetines deportivos",
+    "code": "CAL006",
+    "price": 7.99,
+    "status": true,
+    "stock": 60,
+    "category": "Ropa",
+    "thumbnails": ["https://example.com/calcetines.jpg"]
+  },
+  {
+    "id": "7",
+    "title": "Pantalones cortos",
+    "description": "Pantalones cortos deportivos",
+    "code": "PAN007",
+    "price": 19.99,
+    "status": true,
+    "stock": 35,
+    "category": "Ropa",
+    "thumbnails": ["https://example.com/pantalones_cortos.jpg"]
+  },
+  {
+    "id": "8",
+    "title": "Mochila",
+    "description": "Mochila escolar",
+    "code": "MOC008",
+    "price": 29.99,
+    "status": true,
+    "stock": 15,
+    "category": "Accesorios",
+    "thumbnails": ["https://example.com/mochila.jpg"]
+  },
+  {
+    "id": "9",
+    "title": "Reloj",
+    "description": "Reloj analógico",
+    "code": "REL009",
+    "price": 59.99,
+    "status": true,
+    "stock": 10,
+    "category": "Accesorios",
+    "thumbnails": ["https://example.com/reloj.jpg"]
+  },
+  {
+    "id": "10",
+    "title": "Gafas de sol",
+    "description": "Gafas de sol polarizadas",
+    "code": "GAF010",
+    "price": 39.99,
+    "status": true,
+    "stock": 20,
+    "category": "Accesorios",
+    "thumbnails": ["https://example.com/gafas.jpg"]
+  }
+]
