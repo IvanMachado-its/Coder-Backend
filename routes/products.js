@@ -1,102 +1,113 @@
+// products.js
+
 const express = require('express');
 const fs = require('fs').promises;
 
-class Product {
-  constructor({ title, description, code, price, status = true, stock = 0, category, thumbnails = [] }) {
-    this.id = Date.now().toString(); // Autogenerar ID único
-    this.title = title;
-    this.description = description;
-    this.code = code;
-    this.price = price;
-    this.status = status;
+class Producto {
+  constructor({ titulo, descripcion, codigo, precio, estado = true, stock = 0, categoria, imagenes = [] }) {
+    this.id = Date.now().toString(16); // Generar un ID único basado en la fecha
+    this.titulo = titulo;
+    this.descripcion = descripcion;
+    this.codigo = codigo;
+    this.precio = precio;
+    this.estado = estado;
     this.stock = stock;
-    this.category = category;
-    this.thumbnails = thumbnails;
+    this.categoria = categoria;
+    this.imagenes = imagenes;
   }
 }
 
 const router = express.Router();
 
+// Middleware para validar las propiedades requeridas en el cuerpo de la solicitud
+const validarProducto = (req, res, next) => {
+  const { titulo, descripcion, codigo } = req.body;
+  if (!titulo || !descripcion || !codigo) {
+    return res.status(400).json({ error: 'Se requieren título, descripción y código' });
+  }
+  next();
+};
+
 router.get('/', async (req, res) => {
   try {
-    const data = await fs.readFile('products.json', 'utf8');
-    const products = JSON.parse(data);
-    const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
-    const limitedProducts = limit ? products.slice(0, limit) : products;
-    res.json(limitedProducts);
+    const data = await fs.readFile('productos.json', 'utf8');
+    const productos = JSON.parse(data);
+    const limite = req.query.limite ? parseInt(req.query.limite) : undefined;
+    const productosLimitados = limite ? productos.slice(0, limite) : productos;
+    res.json(productosLimitados);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
 router.get('/:pid', async (req, res) => {
   try {
-    const productId = req.params.pid;
-    const data = await fs.readFile('products.json', 'utf8');
-    const products = JSON.parse(data);
-    const product = products.find(product => product.id === productId);
-    if (product) {
-      res.json(product);
+    const idProducto = req.params.pid;
+    const data = await fs.readFile('productos.json', 'utf8');
+    const productos = JSON.parse(data);
+    const producto = productos.find(producto => producto.id === idProducto);
+    if (producto) {
+      res.json(producto);
     } else {
-      res.status(404).json({ error: 'Product not found' });
+      res.status(404).json({ error: 'Producto no encontrado' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', validarProducto, async (req, res) => {
   try {
-    const newProduct = new Product(req.body);
-    const data = await fs.readFile('products.json', 'utf8');
-    const products = JSON.parse(data);
-    products.push(newProduct);
-    await fs.writeFile('products.json', JSON.stringify(products, null, 2));
-    res.status(201).json(newProduct);
+    const nuevoProducto = new Producto(req.body);
+    const data = await fs.readFile('productos.json', 'utf8');
+    const productos = JSON.parse(data);
+    productos.push(nuevoProducto);
+    await fs.writeFile('productos.json', JSON.stringify(productos, null, 2));
+    res.status(201).json({ id: nuevoProducto.id, mensaje: 'Producto creado exitosamente' });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
 router.put('/:pid', async (req, res) => {
   try {
-    const productId = req.params.pid;
-    const updatedProduct = req.body;
-    const data = await fs.readFile('products.json', 'utf8');
-    let products = JSON.parse(data);
-    const index = products.findIndex(product => product.id === productId);
-    if (index !== -1) {
-      products[index] = { ...products[index], ...updatedProduct, id: productId };
-      await fs.writeFile('products.json', JSON.stringify(products, null, 2));
-      res.json(products[index]);
+    const idProducto = req.params.pid;
+    const productoActualizado = req.body;
+    const data = await fs.readFile('productos.json', 'utf8');
+    let productos = JSON.parse(data);
+    const indice = productos.findIndex(producto => producto.id === idProducto);
+    if (indice !== -1) {
+      productos[indice] = { ...productos[indice], ...productoActualizado, id: idProducto };
+      await fs.writeFile('productos.json', JSON.stringify(productos, null, 2));
+      res.json(productos[indice]);
     } else {
-      res.status(404).json({ error: 'Product not found' });
+      res.status(404).json({ error: 'Producto no encontrado' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
 router.delete('/:pid', async (req, res) => {
   try {
-    const productId = req.params.pid;
-    const data = await fs.readFile('products.json', 'utf8');
-    let products = JSON.parse(data);
-    const index = products.findIndex(product => product.id === productId);
-    if (index !== -1) {
-      products.splice(index, 1);
-      await fs.writeFile('products.json', JSON.stringify(products, null, 2));
-      res.json({ message: 'Product deleted successfully' });
+    const idProducto = req.params.pid;
+    const data = await fs.readFile('productos.json', 'utf8');
+    let productos = JSON.parse(data);
+    const indice = productos.findIndex(producto => producto.id === idProducto);
+    if (indice !== -1) {
+      productos.splice(indice, 1);
+      await fs.writeFile('productos.json', JSON.stringify(productos, null, 2));
+      res.json({ mensaje: 'Producto eliminado exitosamente' });
     } else {
-      res.status(404).json({ error: 'Product not found' });
+      res.status(404).json({ error: 'Producto no encontrado' });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

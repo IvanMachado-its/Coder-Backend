@@ -1,30 +1,32 @@
+// app.js
+
 const express = require('express');
-const productsRouter = require('./routes/products');
-const cartsRouter = require('./routes/carts');
+const morgan = require('morgan');
+const errorHandler = require('./middlewares/errorHandler');
+const pathHandler = require('./middlewares/pathHandler');
+const productsRouter = require('./routes/Products');
+const usersRouter = require('./routes/users');
 
-class Server {
-  constructor() {
-    this.app = express();
-    this.PORT = process.env.PORT || 8080;
-    this.middlewares();
-    this.routes();
-  }
+const app = express();
 
-  middlewares() {
-    this.app.use(express.json());
-  }
+// Middleware para el registro de solicitudes con Morgan
+app.use(morgan('combined'));
 
-  routes() {
-    this.app.use('/api/products', productsRouter);
-    this.app.use('/api/carts', cartsRouter);
-  }
+// Middleware para analizar el cuerpo de las solicitudes
+app.use(express.json());
 
-  listen() {
-    this.app.listen(this.PORT, () => {
-      console.log(`Server is running on port ${this.PORT}`);
-    });
-  }
-}
+// Rutas para productos y usuarios
+app.use('/api/products', productsRouter);
+app.use('/api/users', usersRouter);
 
-const server = new Server();
-server.listen();
+// Middleware para manejar rutas no encontradas
+app.use(pathHandler);
+
+// Middleware para manejar errores
+app.use(errorHandler);
+
+// Puerto en el que escucha el servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
