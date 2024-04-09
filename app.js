@@ -1,32 +1,40 @@
-// app.js
-
 const express = require('express');
-const morgan = require('morgan');
-const errorHandler = require('./middlewares/errorHandler');
-const pathHandler = require('./middlewares/pathHandler');
-const productsRouter = require('./routes/Products');
-const usersRouter = require('./routes/users');
+const http = require('http');
+const socketIo = require('socket.io');
+const exphbs = require('express-handlebars');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
-// Middleware para el registro de solicitudes con Morgan
-app.use(morgan('combined'));
+// Configurar Handlebars
+app.engine('handlebars', exphbs());
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware para analizar el cuerpo de las solicitudes
-app.use(express.json());
+// Configurar endpoints
 
-// Rutas para productos y usuarios
-app.use('/api/products', productsRouter);
-app.use('/api/users', usersRouter);
+// Endpoint POST para crear un producto
+app.post('/crearProducto', (req, res) => {
+    // Lógica para crear un nuevo producto
 
-// Middleware para manejar rutas no encontradas
-app.use(pathHandler);
+    // Emitir evento de actualización a través de Socket.io
+    io.emit('productoCreado', nuevoProducto);
 
-// Middleware para manejar errores
-app.use(errorHandler);
-
-// Puerto en el que escucha el servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    res.redirect('/realtimeproducts');
 });
+
+// Endpoint POST para eliminar un producto
+app.post('/eliminarProducto/:id', (req, res) => {
+    // Lógica para eliminar un producto
+
+    // Emitir evento de actualización a través de Socket.io
+    io.emit('productoEliminado', idProductoEliminado);
+
+    res.redirect('/realtimeproducts');
+});
+
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Servidor en funcionamiento en el puerto ${PORT}`));
