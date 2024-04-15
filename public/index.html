@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecommerce</title>
+</head>
+<body>
+    <h1>Lista de Productos</h1>
+    <ul id="lista-productos"></ul>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        axios.get('/api/productos')
+            .then(response => {
+                const productos = response.data;
+                const listaProductos = document.getElementById('lista-productos');
+                
+              
+                productos.forEach(producto => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${producto.titulo} - ${producto.precio}`;
+                    listaProductos.appendChild(listItem);
+                });
+            })
+            .catch(error => {
+                console.error('Error al obtener la lista de productos:', error);
+            });
+    </script>
+</body>
+</html>

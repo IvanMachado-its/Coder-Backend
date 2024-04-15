@@ -1,10 +1,10 @@
 const express = require('express');
 const fs = require('fs').promises;
-const path = require('path'); // Agregamos la línea para importar el módulo 'path'
+const crypto = require('crypto');
 
 class Producto {
   constructor({ titulo, descripcion, codigo, precio, estado = true, stock = 0, categoria, imagenes = [] }) {
-    this.id = Date.now().toString(16); // Generar un ID único basado en la fecha
+    this.id = crypto.randomBytes(6).toString('hex'); 
     this.titulo = titulo;
     this.descripcion = descripcion;
     this.codigo = codigo;
@@ -17,8 +17,6 @@ class Producto {
 }
 
 const router = express.Router();
-
-// Middleware para validar las propiedades requeridas en el cuerpo de la solicitud
 const validarProducto = (req, res, next) => {
   const { titulo, descripcion, codigo } = req.body;
   if (!titulo || !descripcion || !codigo) {
@@ -29,7 +27,7 @@ const validarProducto = (req, res, next) => {
 
 router.get('/', async (req, res) => {
   try {
-    const data = await fs.readFile(path.join(__dirname, 'productos.json'), 'utf8'); // Utilizamos 'path.join' para obtener la ruta absoluta del archivo
+    const data = await fs.readFile('productos.json', 'utf8');
     const productos = JSON.parse(data);
     const limite = req.query.limite ? parseInt(req.query.limite) : undefined;
     const productosLimitados = limite ? productos.slice(0, limite) : productos;
@@ -43,7 +41,7 @@ router.get('/', async (req, res) => {
 router.get('/:pid', async (req, res) => {
   try {
     const idProducto = req.params.pid;
-    const data = await fs.readFile(path.join(__dirname, 'productos.json'), 'utf8'); // Utilizamos 'path.join' para obtener la ruta absoluta del archivo
+    const data = await fs.readFile('productos.json', 'utf8');
     const productos = JSON.parse(data);
     const producto = productos.find(producto => producto.id === idProducto);
     if (producto) {
@@ -60,10 +58,10 @@ router.get('/:pid', async (req, res) => {
 router.post('/', validarProducto, async (req, res) => {
   try {
     const nuevoProducto = new Producto(req.body);
-    const data = await fs.readFile(path.join(__dirname, 'productos.json'), 'utf8'); // Utilizamos 'path.join' para obtener la ruta absoluta del archivo
+    const data = await fs.readFile('productos.json', 'utf8');
     const productos = JSON.parse(data);
     productos.push(nuevoProducto);
-    await fs.writeFile(path.join(__dirname, 'productos.json'), JSON.stringify(productos, null, 2)); // Utilizamos 'path.join' para obtener la ruta absoluta del archivo
+    await fs.writeFile('productos.json', JSON.stringify(productos, null, 2));
     res.status(201).json({ id: nuevoProducto.id, mensaje: 'Producto creado exitosamente' });
   } catch (error) {
     console.error(error);
@@ -75,12 +73,12 @@ router.put('/:pid', async (req, res) => {
   try {
     const idProducto = req.params.pid;
     const productoActualizado = req.body;
-    const data = await fs.readFile(path.join(__dirname, 'productos.json'), 'utf8'); // Utilizamos 'path.join' para obtener la ruta absoluta del archivo
+    const data = await fs.readFile('productos.json', 'utf8');
     let productos = JSON.parse(data);
     const indice = productos.findIndex(producto => producto.id === idProducto);
     if (indice !== -1) {
       productos[indice] = { ...productos[indice], ...productoActualizado, id: idProducto };
-      await fs.writeFile(path.join(__dirname, 'productos.json'), JSON.stringify(productos, null, 2)); // Utilizamos 'path.join' para obtener la ruta absoluta del archivo
+      await fs.writeFile('productos.json', JSON.stringify(productos, null, 2));
       res.json(productos[indice]);
     } else {
       res.status(404).json({ error: 'Producto no encontrado' });
@@ -94,12 +92,12 @@ router.put('/:pid', async (req, res) => {
 router.delete('/:pid', async (req, res) => {
   try {
     const idProducto = req.params.pid;
-    const data = await fs.readFile(path.join(__dirname, 'productos.json'), 'utf8'); // Utilizamos 'path.join' para obtener la ruta absoluta del archivo
+    const data = await fs.readFile('productos.json', 'utf8');
     let productos = JSON.parse(data);
     const indice = productos.findIndex(producto => producto.id === idProducto);
     if (indice !== -1) {
       productos.splice(indice, 1);
-      await fs.writeFile(path.join(__dirname, 'productos.json'), JSON.stringify(productos, null, 2)); // Utilizamos 'path.join' para obtener la ruta absoluta del archivo
+      await fs.writeFile('productos.json', JSON.stringify(productos, null, 2));
       res.json({ mensaje: 'Producto eliminado exitosamente' });
     } else {
       res.status(404).json({ error: 'Producto no encontrado' });
