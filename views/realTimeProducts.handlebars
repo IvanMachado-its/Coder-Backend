@@ -9,7 +9,7 @@
     <h1>Lista de Productos (Tiempo Real)</h1>
     <ul>
         {{#each products}}
-            <li>{{this.title}} - {{this.price}}</li>
+            <li>{{this.title}} - ${{this.price}}</li>
         {{/each}}
     </ul>
 
@@ -19,9 +19,10 @@
         <button type="submit">Crear Producto</button>
     </form>
 
-    <form action="/eliminarProducto/:id" method="POST">
-        <input type="hidden" name="id" value="{{product.id}}">
-        <button type="submit">Eliminar Producto</button>
+    {{#if products.length}}
+    <form action="/eliminarProducto/{{products.[0].id}}" method="POST">
+        <button type="submit">Eliminar Primer Producto</button>
     </form>
+    {{/if}}
 </body>
 </html>
