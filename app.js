@@ -1,8 +1,15 @@
+// app.js
+
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const exphbs = require('express-handlebars');
-const path = require('path'); 
+const path = require('path');
+const mongoose = require('./dao/db'); // Importar la conexión a MongoDB
+
+// Importar modelos de MongoDB
+const Product = require('./dao/models/Product');
+const Message = require('./dao/models/Message');
 
 const app = express();
 const server = http.createServer(app);
@@ -28,32 +35,53 @@ app.get('/realtimeproducts', (req, res) => {
 app.post('/crearProducto', (req, res) => {
     const { title, price } = req.body;
 
-    // Crear el nuevo producto
-    const nuevoProducto = {
-        id: productos.length + 1,
-        title: title,
-        price: price
-    };
-
-    productos.push(nuevoProducto);
-
-    io.emit('productoCreado', nuevoProducto);
-
-    res.redirect('/realtimeproducts');
+    // Crear el nuevo producto en MongoDB
+    Product.create({ title, price })
+        .then(nuevoProducto => {
+            io.emit('productoCreado', nuevoProducto);
+            res.redirect('/realtimeproducts');
+        })
+        .catch(error => {
+            console.error(error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        });
 });
 
 // Endpoint POST para eliminar un producto
 app.post('/eliminarProducto/:id', (req, res) => {
     const idProducto = req.params.id;
 
-
-    productos = productos.filter(producto => producto.id !== parseInt(idProducto));
-
-    io.emit('productoEliminado', idProducto);
-
-    res.redirect('/realtimeproducts');
+    Product.findByIdAndDelete(idProducto)
+        .then(() => {
+            io.emit('productoEliminado', idProducto);
+            res.redirect('/realtimeproducts');
+        })
+        .catch(error => {
+            console.error(error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        });
 });
 
-// Puerto
-const PORT = process.env.PORT || 8080; 
+// Configurar conexión a MongoDB
+const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => console.log(`Servidor en funcionamiento en el puerto ${PORT}`));
+
+// Configurar socket.io para el chat
+io.on('connection', socket => {
+    console.log('Usuario conectado');
+
+    socket.on('disconnect', () => {
+        console.log('Usuario desconectado');
+    });
+
+    socket.on('chat message', msg => {
+        // Guardar mensaje en MongoDB
+        Message.create(msg)
+            .then(() => {
+                io.emit('chat message', msg);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    });
+});
