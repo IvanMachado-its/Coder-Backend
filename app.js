@@ -1,72 +1,41 @@
-// app.js
-
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const exphbs = require('express-handlebars');
 const path = require('path');
-const mongoose = require('./dao/db'); // Importar la conexión a MongoDB
-
-// Importar modelos de MongoDB
-const Product = require('./dao/models/Product');
-const Message = require('./dao/models/Message');
+const mongoose = require('mongoose');
+require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-let productos = [];
+// Conexión a MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('Conexión a la base de datos establecida'))
+.catch(err => console.error('Error de conexión a la base de datos:', err));
 
+// Configuración del servidor
 app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas
-app.get('/', (req, res) => {
-    res.render('home', { products: productos });
-});
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/usersRouter');
+const productsRouter = require('./routes/productsRouter');
+const cartsRouter = require('./routes/cartsRouter');
 
-app.get('/realtimeproducts', (req, res) => {
-    res.render('realTimeProducts', { products: productos });
-});
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+app.use('/products', productsRouter);
+app.use('/carts', cartsRouter);
 
-// Endpoint POST para crear un producto
-app.post('/crearProducto', (req, res) => {
-    const { title, price } = req.body;
-
-    // Crear el nuevo producto en MongoDB
-    Product.create({ title, price })
-        .then(nuevoProducto => {
-            io.emit('productoCreado', nuevoProducto);
-            res.redirect('/realtimeproducts');
-        })
-        .catch(error => {
-            console.error(error);
-            res.status(500).json({ error: 'Internal Server Error' });
-        });
-});
-
-// Endpoint POST para eliminar un producto
-app.post('/eliminarProducto/:id', (req, res) => {
-    const idProducto = req.params.id;
-
-    Product.findByIdAndDelete(idProducto)
-        .then(() => {
-            io.emit('productoEliminado', idProducto);
-            res.redirect('/realtimeproducts');
-        })
-        .catch(error => {
-            console.error(error);
-            res.status(500).json({ error: 'Internal Server Error' });
-        });
-});
-
-// Configurar conexión a MongoDB
-const PORT = process.env.PORT || 8080;
-server.listen(PORT, () => console.log(`Servidor en funcionamiento en el puerto ${PORT}`));
-
-// Configurar socket.io para el chat
+// Configuración de socket.io para el chat
 io.on('connection', socket => {
     console.log('Usuario conectado');
 
@@ -85,3 +54,7 @@ io.on('connection', socket => {
             });
     });
 });
+
+// Iniciar servidor
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => console.log(`Servidor en funcionamiento en el puerto ${PORT}`));
