@@ -1,16 +1,16 @@
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
-const exphbs = require('express-handlebars');
 const path = require('path');
-const mongoose = require('mongoose');
-require('dotenv').config();
+const mongoose = require('mongoose'); // Importa Mongoose
+const Product = require('./src/models/Product'); // Importa el modelo Product
+
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
 
-// Conexión a MongoDB
+
+require('dotenv').config();
+// Configuración de la base de datos MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -18,43 +18,32 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('Conexión a la base de datos establecida'))
 .catch(err => console.error('Error de conexión a la base de datos:', err));
 
-// Configuración del servidor
-app.engine('handlebars', exphbs());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rutas
-const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/usersRouter');
-const productsRouter = require('./routes/productsRouter');
-const cartsRouter = require('./routes/cartsRouter');
+// Endpoint para obtener productos desde la base de datos
+app.get('/api/productos', async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (error) {
+    console.error('Error al obtener los productos:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
 
-app.use('/', indexRouter);
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+const usersRouter = require('./src/routes/usersRouter');
+const productsRouter = require('./src/routes/productsRouter');
+const cartsRouter = require('./src/routes/cartsRouter');
+
 app.use('/users', usersRouter);
 app.use('/products', productsRouter);
 app.use('/carts', cartsRouter);
 
-// Configuración de socket.io para el chat
-io.on('connection', socket => {
-    console.log('Usuario conectado');
-
-    socket.on('disconnect', () => {
-        console.log('Usuario desconectado');
-    });
-
-    socket.on('chat message', msg => {
-        // Guardar mensaje en MongoDB
-        Message.create(msg)
-            .then(() => {
-                io.emit('chat message', msg);
-            })
-            .catch(error => {
-                console.error(error);
-            });
-    });
-});
-
-// Iniciar servidor
 const PORT = process.env.PORT || 8080;
 server.listen(PORT, () => console.log(`Servidor en funcionamiento en el puerto ${PORT}`));

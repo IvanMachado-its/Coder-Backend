@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const Product = require('../dao/models/Product');
+const Product = require('../models/Product'); // Importar el modelo de producto de MongoDB
+const mongoosePaginate = require('mongoose-paginate-v2'); // Importar mongoose-paginate-v2
+
 
 // Middleware para validar la estructura del producto
 const validarProducto = (req, res, next) => {
@@ -11,14 +13,19 @@ const validarProducto = (req, res, next) => {
   next();
 };
 
-// Endpoint para obtener todos los productos
+// Obtener todos los productos con paginación
 router.get('/', async (req, res) => {
   try {
-    const productos = await Product.find();
-    res.json(productos);
+    const { page = 1, limit = 10 } = req.query;
+    const options = {
+      page: parseInt(page), 
+      limit: parseInt(limit),
+    };
+    const productos = await Producto.paginate({}, options); 
+    res.json(productos); 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

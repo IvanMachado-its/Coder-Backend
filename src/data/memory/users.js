@@ -4,7 +4,7 @@ const express = require('express');
 const UserManager = require('./UserManager'); // Importar la clase UserManager
 
 const router = express.Router();
-const userManager = new UserManager(); // Instanciar el gestor de usuarios
+const userManager = new UserManager();
 
 router.get('/', (req, res) => {
   try {
