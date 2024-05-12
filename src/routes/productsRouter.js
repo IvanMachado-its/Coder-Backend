@@ -3,7 +3,6 @@ const router = express.Router();
 const Product = require('../models/Product'); // Importar el modelo de producto de MongoDB
 const mongoosePaginate = require('mongoose-paginate-v2'); // Importar mongoose-paginate-v2
 
-
 // Middleware para validar la estructura del producto
 const validarProducto = (req, res, next) => {
   const { title, description, code } = req.body;
@@ -21,7 +20,7 @@ router.get('/', async (req, res) => {
       page: parseInt(page), 
       limit: parseInt(limit),
     };
-    const productos = await Producto.paginate({}, options); 
+    const productos = await Product.paginate({}, options); 
     res.json(productos); 
   } catch (error) {
     console.error(error);

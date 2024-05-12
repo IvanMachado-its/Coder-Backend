@@ -1,8 +1,9 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
-const mongoose = require('mongoose'); // Importa Mongoose
-const Product = require('./src/models/Product'); // Importa el modelo Product
+const mongoose = require('mongoose'); 
+const Product = require('./src/models/Product');
+
 
 
 const app = express();
@@ -11,10 +12,7 @@ const server = http.createServer(app);
 
 require('dotenv').config();
 // Configuración de la base de datos MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI, {})
 .then(() => console.log('Conexión a la base de datos establecida'))
 .catch(err => console.error('Error de conexión a la base de datos:', err));
 
