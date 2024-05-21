@@ -1,17 +1,18 @@
 {
   "dependencies": {
     "bcrypt": "^5.1.1",
-    "connect-mongo": "^5.1.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-handlebars": "^7.1.2",
     "express-session": "^1.18.0",
     "mongodb": "^6.6.1",
     "mongoose": "^8.3.2",
-    "mongoose-paginate-v2": "^1.8.0",
+    "mongoose-paginate-v2": "^1.8.1",
     "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
     "nodemon": "^3.1.0",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.7.5",
+    "uuid": "^9.0.1"
   },
   "name": "programacion-backend",
   "description": "��#\u0000 \u0000C\u0000o\u0000d\u0000e\u0000r\u0000-\u0000B\u0000a\u0000c\u0000k\u0000e\u0000n\u0000d\u0000\r\u0000 \u0000",
