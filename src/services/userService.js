@@ -16,7 +16,7 @@ async function readOne(userId) {
 }
 
 async function readOneByEmail(email) {
-  return await User.findOne({ email }); // Buscar por email
+  return await User.findOne({ email }); 
 }
 
 async function update(userId, userData) {
@@ -31,7 +31,7 @@ module.exports = {
   create,
   read,
   readOne,
-  readOneByEmail, // Exportar el nuevo método
+  readOneByEmail, 
   update,
   destroy
 };

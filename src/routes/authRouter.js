@@ -1,62 +1,63 @@
+// src/routes/authRouter.js
 const express = require('express');
-const bcrypt = require('bcrypt');
-const uuid = require('uuid');
-const User = require('../models/User');
-
+const passport = require('passport');
+const jwt = require('jsonwebtoken');
 const router = express.Router();
 
-router.get('/register', (req, res) => {
-  res.render('register');
-});
+router.get('/github', passport.authenticate('github', { scope: ['user:email'] }));
 
-router.post('/register', async (req, res) => {
-  const { username, email, age, password, userType } = req.body;
-  try {
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
-    if (existingUser) {
-      return res.status(400).json({ error: 'El nombre de usuario o correo electrónico ya está en uso' });
-    }
-
-    const userId = uuid.v4();
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await User.create({ userId, username, email, age, password: hashedPassword, userType });
-
-    res.redirect('/login');
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error al registrar el usuario');
+router.get('/github/callback', passport.authenticate('github', { failureRedirect: '/login' }),
+  (req, res) => {
+    const token = jwt.sign({ id: req.user.id, username: req.user.username }, process.env.JWT_SECRET, {
+      expiresIn: '1h'
+    });
+    res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    res.redirect('/');
   }
-});
+);
 
-router.get('/login', (req, res) => {
-  res.render('login');
-});
-
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    const user = await User.findOne({ username });
-    if (user && await bcrypt.compare(password, user.password)) {
-      req.session.user = user;
-      res.redirect('/products');
-    } else {
-      res.render('login', { error: 'Nombre de usuario o contraseña incorrectos' });
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Error al iniciar sesión');
-  }
-});
-
-router.get('/logout', (req, res) => {
-  req.session.destroy(err => {
+router.post('/register', async (req, res, next) => {
+  passport.authenticate('register', (err, user, info) => {
     if (err) {
-      console.error(err);
-      res.status(500).send('Error al cerrar sesión');
-    } else {
-      res.redirect('/login');
+      return next(err);
     }
-  });
+    if (!user) {
+      return res.status(400).json({ message: info.message });
+    }
+    req.login(user, (err) => {
+      if (err) {
+        return next(err);
+      }
+      return res.status(201).json({ message: 'User registered successfully', user });
+    });
+  })(req, res, next);
+});
+
+router.post('/login', async (req, res, next) => {
+  passport.authenticate('login', (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.status(400).json({ message: info.message });
+    }
+    req.login(user, { session: false }, (err) => {
+      if (err) {
+        return next(err);
+      }
+      const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, {
+        expiresIn: '1h'
+      });
+      res.cookie('jwt', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+      return res.status(200).json({ message: 'User logged in successfully' });
+    });
+  })(req, res, next);
+});
+
+router.post('/logout', (req, res) => {
+  res.clearCookie('jwt');
+  req.logout();
+  res.json({ message: 'User logged out successfully' });
 });
 
 module.exports = router;

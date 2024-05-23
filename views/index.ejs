@@ -49,8 +49,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="toggleCartDropdown()">Carrito</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" id="login-nav-item">
                         <a class="nav-link" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item" id="logout-nav-item" style="display:none;">
+                        <a class="nav-link" href="#" onclick="logout()">Logout</a>
                     </li>
                 </ul>
             </div>
@@ -60,6 +63,9 @@
     <!-- Contenido principal -->
     <div class="container mt-4">
         <h1>Lista de Productos</h1>
+        <div id="user-info" style="display:none;">
+            <p>Bienvenido, <span id="username"></span></p>
+        </div>
         <div class="row" id="lista-productos"></div>
     </div>
 
@@ -76,6 +82,37 @@
     <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                axios.get('/api/verifyToken', { headers: { 'Authorization': `Bearer ${token}` } })
+                    .then(response => {
+                        if (response.data.valid) {
+                            document.getElementById('username').innerText = response.data.user.username;
+                            document.getElementById('user-info').style.display = 'block';
+                            document.getElementById('login-nav-item').style.display = 'none';
+                            document.getElementById('logout-nav-item').style.display = 'block';
+                            obtenerCarrito();
+                        } else {
+                            localStorage.removeItem('token');
+                            window.location.href = '/login';
+                        }
+                    })
+                    .catch(error => {
+                        localStorage.removeItem('token');
+                        window.location.href = '/login';
+                    });
+            } else {
+                window.location.href = '/login';
+            }
+        });
+
+        // Función para logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+
         // Obtener productos mediante Axios
         axios.get('/api/productos')
             .then(response => {
@@ -103,7 +140,12 @@
 
         // Función para agregar productos al carrito
         function agregarAlCarrito(productId) {
-            axios.post('/carts/add', { productId, quantity: 1 })
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            axios.post('/carts/add', { productId, quantity: 1 }, { headers: { 'Authorization': `Bearer ${token}` } })
                 .then(response => {
                     console.log('Producto agregado al carrito:', response.data);
                     obtenerCarrito();
@@ -115,7 +157,12 @@
 
         // Función para obtener el carrito del usuario
         function obtenerCarrito() {
-            axios.get('/carts')
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            axios.get('/carts', { headers: { 'Authorization': `Bearer ${token}` } })
                 .then(response => {
                     const carrito = response.data;
                     const listaCarrito = document.getElementById('lista-carrito');
@@ -138,7 +185,8 @@
 
         // Función para eliminar productos del carrito
         function eliminarDelCarrito(itemId) {
-            axios.delete(`/carts/remove/${itemId}`)
+            const token = localStorage.getItem('token');
+            axios.delete(`/carts/remove/${itemId}`, { headers: { 'Authorization': `Bearer ${token}` } })
                 .then(response => {
                     console.log('Producto eliminado del carrito:', response.data);
                     obtenerCarrito();
@@ -150,7 +198,8 @@
 
         // Función para completar el carrito
         document.getElementById('complete-cart').addEventListener('click', () => {
-            axios.post('/carts/complete')
+            const token = localStorage.getItem('token');
+            axios.post('/carts/complete', {}, { headers: { 'Authorization': `Bearer ${token}` } })
                 .then(response => {
                     console.log('Compra completada:', response.data);
                     obtenerCarrito();

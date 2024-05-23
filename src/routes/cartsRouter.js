@@ -1,100 +1,60 @@
 // src/routes/cartsRouter.js
-
 const express = require('express');
 const router = express.Router();
 const Cart = require('../models/Cart');
-const Product = require('../models/Product');
+const { verifyToken } = require('../middleware/authMiddleware');
 
-// Middleware de autenticación
-const authMiddleware = (req, res, next) => {
-  if (!req.session.user) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  next();
-};
-
-// Obtener el carrito del usuario
-router.get('/', authMiddleware, async (req, res) => {
+// Ruta para obtener el carrito del usuario
+router.get('/', verifyToken, async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.session.user._id, status: 'active' }).populate('items.product');
-    if (!cart) {
-      return res.status(404).json({ error: 'No active cart found' });
-    }
+    const cart = await Cart.findOne({ userId: req.user.id });
     res.json(cart);
   } catch (error) {
-    console.error('Error getting cart:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error fetching cart' });
   }
 });
 
-// Agregar un producto al carrito
-router.post('/add', authMiddleware, async (req, res) => {
-  const { productId, quantity } = req.body;
-
+// Ruta para agregar un producto al carrito
+router.post('/add', verifyToken, async (req, res) => {
   try {
-    let cart = await Cart.findOne({ user: req.session.user._id, status: 'active' });
-
-    if (!cart) {
-      cart = new Cart({ user: req.session.user._id, items: [] });
-    }
-
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
-    }
-
-    const cartItem = cart.items.find(item => item.product.equals(productId));
-    if (cartItem) {
-      cartItem.quantity += quantity;
-    } else {
-      cart.items.push({ product: productId, quantity });
-    }
-
-    await cart.save();
-    res.status(201).json(cart);
-  } catch (error) {
-    console.error('Error adding product to cart:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// Eliminar un producto del carrito
-router.delete('/remove/:itemId', authMiddleware, async (req, res) => {
-  const { itemId } = req.params;
-
-  try {
-    const cart = await Cart.findOne({ user: req.session.user._id, status: 'active' });
-    if (!cart) {
-      return res.status(404).json({ error: 'No active cart found' });
-    }
-
-    cart.items.id(itemId).remove();
-    await cart.save();
-
-    res.json(cart);
-  } catch (error) {
-    console.error('Error removing cart item:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// Completar el carrito
-router.post('/complete', authMiddleware, async (req, res) => {
-  try {
+    const { productId, quantity } = req.body;
     const cart = await Cart.findOneAndUpdate(
-      { user: req.session.user._id, status: 'active' },
-      { status: 'completed' },
+      { userId: req.user.id },
+      { $push: { items: { productId, quantity } } },
+      { new: true, upsert: true }
+    );
+    res.json(cart);
+  } catch (error) {
+    res.status(500).json({ error: 'Error adding to cart' });
+  }
+});
+
+// Ruta para eliminar un producto del carrito
+router.delete('/remove/:itemId', verifyToken, async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const cart = await Cart.findOneAndUpdate(
+      { userId: req.user.id },
+      { $pull: { items: { _id: itemId } } },
       { new: true }
     );
-
-    if (!cart) {
-      return res.status(404).json({ error: 'No active cart found' });
-    }
-
-    res.json({ message: 'Cart completed successfully' });
+    res.json(cart);
   } catch (error) {
-    console.error('Error completing cart:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: 'Error removing from cart' });
+  }
+});
+
+// Ruta para completar el carrito
+router.post('/complete', verifyToken, async (req, res) => {
+  try {
+    const cart = await Cart.findOneAndUpdate(
+      { userId: req.user.id },
+      { $set: { items: [] } },
+      { new: true }
+    );
+    res.json(cart);
+  } catch (error) {
+    res.status(500).json({ error: 'Error completing cart' });
   }
 });
 
