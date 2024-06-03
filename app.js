@@ -50,7 +50,7 @@ app.use('/carts', cartsRouter);
 
 // Ruta del índice
 app.get('/', (req, res) => {
-  res.render('index'); 
+  res.render('index');
 });
 
 // Iniciar servidor
