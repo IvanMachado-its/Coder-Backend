@@ -1,0 +1,22 @@
+<%- include('partials/header') %>
+
+<section class="manage-products">
+    <h2>Manage Products</h2>
+    <ul>
+        <% products.forEach(product => { %>
+            <li>
+                <h3><%= product.name %></h3>
+                <p><strong>Price:</strong> $<%= product.price %></p>
+                <p><strong>Description:</strong> <%= product.description %></p>
+                <img src="<%= product.imageUrl %>" alt="<%= product.name %>">
+                <a href="/admin/products/<%= product._id %>/edit">Edit</a>
+                <form action="/admin/products/<%= product._id %>?_method=DELETE" method="POST">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        <% }); %>
+    </ul>
+    <a href="/admin/products/new">Add New Product</a>
+</section>
+
+<%- include('partials/footer') %>

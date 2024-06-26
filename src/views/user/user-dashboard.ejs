@@ -1,0 +1,14 @@
+<%- include('partials/header') %>
+
+<section class="user-dashboard">
+    <h2>Welcome, <%= user.username %>!</h2>
+    <p>Your Cart:</p>
+    <ul>
+        <% cart.forEach(item => { %>
+            <li><%= item.name %> - $<%= item.price %> <a href="/user/cart/<%= item._id %>?_method=DELETE">Remove</a></li>
+        <% }); %>
+    </ul>
+    <a href="/user/checkout">Checkout</a>
+</section>
+
+<%- include('partials/footer') %>
