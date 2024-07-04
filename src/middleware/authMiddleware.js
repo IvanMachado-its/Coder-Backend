@@ -10,6 +10,9 @@ exports.extractUserFromToken = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id).select('-password');
+    if (!user) {
+      throw new Error('User not found');
+    }
     req.user = user;
     next();
   } catch (err) {
@@ -23,3 +26,18 @@ exports.ensureAuthenticated = (req, res, next) => {
   }
   res.redirect('/login');
 };
+
+exports.isAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    return next();
+  }
+  res.status(403).json({ message: 'Unauthorized' });
+};
+
+exports.isUser = (req, res, next) => {
+  if (req.user && req.user.role === 'user') {
+    return next();
+  }
+  res.status(403).json({ message: 'Unauthorized' });
+};
+

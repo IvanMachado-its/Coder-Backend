@@ -1,59 +1,62 @@
-// app.js
 const express = require('express');
-const path = require('path');
-const session = require('express-session');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoStore = require('connect-mongo').default;
 const dotenv = require('dotenv');
+const path = require('path');
 const cookieParser = require('cookie-parser');
-const passport = require('./src/config/passportConfig');
-require('./src/config/githubAuth');
-const authRouter = require('./src/routes/authRouter');
-const productsRouter = require('./src/routes/productsRouter');
-const cartsRouter = require('./src/routes/cartsRouter');
+const connectDB = require('./src/config/db');
+const ticketRoutes = require('./src/routes/ticket');
+const adminRoutes = require('./src/routes/admin');
+const userRoutes = require('./src/routes/user');
+const authRoutes = require('./src/routes/auth');
+const { extractUserFromToken } = require('./src/middleware/authMiddleware');
 
-// Cargar variables de entorno
-dotenv.config();
+// Carga las variables de entorno desde .env
+dotenv.config({ path: './.env' });
+
+// Conectar a MongoDB (Atlas)
+connectDB();
 
 const app = express();
-const PORT = process.env.PORT || 8080;
-
-// Conectar a MongoDB
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error(err));
-
-// Configurar vistas
-app.set('views', path.join(__dirname, 'src', 'views'));
-app.set('view engine', 'ejs');
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Configurar sesiones
-app.use(session({
+// Configuración de sesión con connect-mongo y express-session
+const sessionOptions = {
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
-}));
+  saveUninitialized: false,
+  store: MongoStore.create({ 
+    mongoUrl: process.env.MONGODB_URI,
+    ttl: 24 * 60 * 60 
+  }),
+  cookie: { maxAge: 24 * 60 * 60 * 1000 } 
+};
 
-// Inicializar passport
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(session(sessionOptions));
+
+// Middleware de extracción de usuario desde token
+app.use(extractUserFromToken);
 
 // Rutas
-app.use('/auth', authRouter);
-app.use('/products', productsRouter);
-app.use('/carts', cartsRouter);
+app.use('/tickets', ticketRoutes);
+app.use('/admin', adminRoutes);
+app.use('/user', userRoutes);
+app.use('/auth', authRoutes);
 
-// Ruta del índice
-app.get('/', (req, res) => {
-  res.render('index');
+// Middleware para manejar errores
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
 
-// Iniciar servidor
+// Iniciar el servidor
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

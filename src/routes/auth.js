@@ -1,25 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const authService = require('../services/authService');
+const authController = require('../controllers/authController');
 
-router.post('/register', async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    const user = await authService.register(username, password);
-    res.status(201).json(user);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
+router.get('/login', (req, res) => {
+  res.render('auth/login');
 });
 
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    const token = await authService.login(username, password);
-    res.status(200).json({ token });
-  } catch (err) {
-    res.status(401).json({ message: err.message });
-  }
+router.get('/register', (req, res) => {
+  res.render('auth/register');
+});
+
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+router.get('/logout', (req, res) => {
+  res.clearCookie('jwt');
+  res.redirect('/');
 });
 
 module.exports = router;
