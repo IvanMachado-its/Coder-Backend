@@ -1,5 +1,3 @@
-// src/controllers/authController.js
-
 const AuthService = require('../services/authService');
 
 exports.register = async (req, res) => {
@@ -22,24 +20,3 @@ exports.login = async (req, res) => {
     res.status(400).render('auth/login', { message: error.message });
   }
 };
-
-exports.logout = async (req, res) => {
-  try {
-    res.clearCookie('jwt');
-    res.redirect('/');
-  } catch (error) {
-    res.status(500).json({ message: 'Error al cerrar sesión' });
-  }
-};
-
-// Obtener información del usuario actual
-exports.getCurrentUser = async (req, res) => {
-  try {
-    const { user } = req;
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: 'Error al obtener información del usuario' });
-  }
-};
-
-module.exports = exports;
