@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
-const MongoStore = require('connect-mongo').default;
+const MongoDBStore = require('connect-mongodb-session')(session);
 const dotenv = require('dotenv');
 const path = require('path');
 const cookieParser = require('cookie-parser');
@@ -26,16 +26,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configuración de sesión con connect-mongo y express-session
+// Configuración de sesión con connect-mongodb-session
+const store = new MongoDBStore({
+  uri: process.env.MONGODB_URI,
+  collection: 'sessions'
+});
+
+store.on('error', (error) => {
+  console.log(error);
+});
+
 const sessionOptions = {
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ 
-    mongoUrl: process.env.MONGODB_URI,
-    ttl: 24 * 60 * 60 
-  }),
-  cookie: { maxAge: 24 * 60 * 60 * 1000 } 
+  store: store,
+  cookie: { maxAge: 24 * 60 * 60 * 1000 } // Duración de la sesión en milisegundos
 };
 
 app.use(session(sessionOptions));
