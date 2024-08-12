@@ -41,7 +41,7 @@ const sessionOptions = {
   resave: false,
   saveUninitialized: false,
   store: store,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 } // Duración de la sesión en milisegundos
+  cookie: { maxAge: 24 * 60 * 60 * 1000 } 
 };
 
 app.use(session(sessionOptions));
@@ -52,8 +52,9 @@ app.use(extractUserFromToken);
 // Rutas
 app.use('/tickets', ticketRoutes);
 app.use('/admin', adminRoutes);
-app.use('/user', userRoutes);
+app.use('/user', userRoutes); 
 app.use('/auth', authRoutes);
+
 
 // Middleware para manejar errores
 app.use((err, req, res, next) => {
