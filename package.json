@@ -25,8 +25,10 @@
     "passport-local": "^1.0.0",
     "session": "^0.1.0",
     "socket.io": "^4.7.5",
+    "stripe": "^16.8.0",
     "twilio": "^5.2.2",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "winston": "^3.14.2"
   },
   "name": "programacion-backend",
   "description": "��#\u0000 \u0000C\u0000o\u0000d\u0000e\u0000r\u0000-\u0000B\u0000a\u0000c\u0000k\u0000e\u0000n\u0000d\u0000\r\u0000 \u0000",
