@@ -96,7 +96,7 @@ app.use(session(sessionOptions));
 app.use(extractUserFromToken);
 
 // Rutas principales de la aplicación
-app.use('/tickets', ticketRoutes);
+app.use('/ticket', ticketRoutes);
 app.use('/admin', adminRoutes);
 app.use('/user', userRoutes);
 app.use('/auth', authRoutes);
