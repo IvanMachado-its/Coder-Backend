@@ -1,12 +1,13 @@
-// src/controllers/ticketController.js
 const Ticket = require('../models/Ticket');
 const twilio = require('twilio');
-const dotenv = require('dotenv');
-dotenv.config();
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
+// Credenciales de Twilio proporcionadas
+const accountSid = 'AC293c3f9c31163a433117c6442db241f2';
+const authToken = '90d1140d1ee6034914fc0b07ef5c62d5';
 const client = twilio(accountSid, authToken);
+
+// Número de teléfono de Twilio
+const twilioPhoneNumber = '+19784124569';
 
 // Función para generar un código aleatorio único
 function generateUniqueCode(length) {
@@ -43,7 +44,7 @@ exports.createTicket = async (req, res) => {
     await client.messages.create({
       body: message,
       to: purchaser,
-      from: process.env.TWILIO_PHONE_NUMBER
+      from: twilioPhoneNumber
     });
 
     res.status(201).json(newTicket);
@@ -70,3 +71,10 @@ exports.verifyCompletedPurchase = async (req, res) => {
     res.status(500).json({ message: 'Error al verificar compra completada' });
   }
 };
+
+// Código adicional de Twilio para verificar con servicio específico
+client.verify.v2.services("VAffcce80bb67483487b476be454964968")
+      .verifications
+      .create({ to: '+59893484258', channel: 'sms' })
+      .then(verification => console.log(verification.sid))
+      .catch(err => console.error('Error en la verificación:', err));

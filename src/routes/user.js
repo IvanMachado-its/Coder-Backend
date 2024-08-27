@@ -1,35 +1,36 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../config/multer'); // Importing multer configuration
-const {
-  getAllUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  deleteUser,
-  uploadDocuments,
-  upgradeToPremium,
-} = require('../controllers/userController'); 
+const User = require('../models/User');
+const sendEmail = require('../utils/sendEmail'); // Asume que tienes una función para enviar correos
+const moment = require('moment');
 
-// Route to get all users
-router.get('/', getAllUsers);
 
-// Route to get a user by ID
-router.get('/:id', getUserById);
 
-// Route to create a new user
-router.post('/', createUser);
+// Ruta para obtener todos los usuarios
+router.get('/users', async (req, res) => {
+  try {
+      const users = await User.find({}, 'name email role'); // Selecciona solo los campos necesarios
+      res.json(users);
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
+});
 
-// Route to update an existing user
-router.put('/:id', updateUser);
+// Ruta para eliminar usuarios inactivos
+router.delete('/users/inactive', async (req, res) => {
+    const twoDaysAgo = moment().subtract(2, 'days');
+    try {
+        const inactiveUsers = await User.find({ lastLogin: { $lt: twoDaysAgo } });
 
-// Route to delete a user
-router.delete('/:id', deleteUser);
+        for (const user of inactiveUsers) {
+            await User.deleteOne({ _id: user._id });
+            await sendEmail(user.email, 'Account Deleted', 'Your account has been deleted due to inactivity.');
+        }
 
-// Route to upload user documents
-router.post('/:uid/documents', upload.array('documents'), uploadDocuments);
-
-// Route to upgrade user to premium
-router.post('/premium/:uid', upgradeToPremium);
+        res.status(200).json({ message: 'Inactive users deleted and notified by email.' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
 
 module.exports = router;
