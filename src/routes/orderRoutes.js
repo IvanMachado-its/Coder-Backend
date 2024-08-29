@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { createOrder, getUserOrders, getAllOrders } from '../controllers/orderController.js';
+import { isAuthenticated, isAdmin } from '../middlewares/authMiddleware.js';
+
 const router = express.Router();
-const { createOrder, getUserOrders, getAllOrders } = require('../controllers/orderController');
-const { isAuthenticated, isAdmin } = require('../middlewares/authMiddleware');
 
 // Crear una nueva orden
 router.post('/', isAuthenticated, createOrder);
@@ -12,4 +13,4 @@ router.get('/my-orders', isAuthenticated, getUserOrders);
 // Obtener todas las órdenes (solo admin)
 router.get('/', isAuthenticated, isAdmin, getAllOrders);
 
-module.exports = router;
+export default router;

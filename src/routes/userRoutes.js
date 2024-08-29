@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { getAllUsers, deleteInactiveUsers, getUserById, updateUserRole, deleteUser } from '../controllers/userController.js';
+import { isAuthenticated, isAdmin } from '../middlewares/authMiddleware.js';
+
 const router = express.Router();
-const { getAllUsers, deleteInactiveUsers, getUserById, updateUserRole, deleteUser } = require('../controllers/userController');
-const { isAuthenticated, isAdmin } = require('../middlewares/authMiddleware');
 
 // Obtener todos los usuarios (solo admin)
 router.get('/', isAuthenticated, isAdmin, getAllUsers);
@@ -18,4 +19,4 @@ router.put('/:id/role', isAuthenticated, isAdmin, updateUserRole);
 // Eliminar un usuario (solo admin)
 router.delete('/:id', isAuthenticated, isAdmin, deleteUser);
 
-module.exports = router;
+export default router;
