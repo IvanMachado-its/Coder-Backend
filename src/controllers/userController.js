@@ -1,164 +1,99 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const { validationResult } = require('express-validator');
+import User from '../models/User.js';
+import { sendEmailNotification } from '../services/emailService.js';
+import moment from 'moment';
 
-// Get all users
-exports.getAllUsers = async (req, res) => {
+// Obtener todos los usuarios
+export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password'); // Exclude the password field
-    res.status(200).json(users);
-  } catch (err) {
-    console.error('Error fetching users:', err);
-    res.status(500).json({ message: 'Error fetching users' });
+    const users = await User.find().select('name email role'); // Solo datos principales
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener los usuarios' });
   }
 };
 
-// Get user by ID
-exports.getUserById = async (req, res) => {
-  const userId = req.params.id;
+// Eliminar usuarios inactivos
+export const deleteInactiveUsers = async (req, res) => {
   try {
-    const user = await User.findById(userId).select('-password');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    res.status(200).json(user);
-  } catch (err) {
-    console.error(`Error fetching user with ID ${userId}:`, err);
-    res.status(500).json({ message: 'Error fetching user' });
-  }
-};
+    const twoDaysAgo = moment().subtract(2, 'days').toDate();
+    const inactiveUsers = await User.find({ lastLogin: { $lt: twoDaysAgo } });
 
-// Create a new user
-exports.createUser = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+    // Eliminar usuarios inactivos
+    await User.deleteMany({ lastLogin: { $lt: twoDaysAgo } });
 
-  const { username, email, password } = req.body;
-
-  try {
-    let user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: 'Email is already registered' });
+    // Enviar notificaciones por correo
+    for (const user of inactiveUsers) {
+      await sendEmailNotification(user.email, 'Tu cuenta ha sido eliminada por inactividad.');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    user = new User({
-      username,
-      email,
-      password: hashedPassword,
-    });
-
-    await user.save();
-
-    const token = jwt.sign(
-      { id: user._id, username: user.username, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' }
-    );
-
-    res.status(201).json({ token });
-  } catch (err) {
-    console.error('Error creating user:', err);
-    res.status(500).json({ message: 'Error creating user' });
+    res.json({ message: 'Usuarios inactivos eliminados' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar usuarios inactivos' });
   }
 };
 
-// Update an existing user
-exports.updateUser = async (req, res) => {
-  const userId = req.params.id;
-  const { username, email } = req.body;
-
+// Obtener un usuario por ID
+export const getUserById = async (req, res) => {
   try {
-    let user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    user.username = username || user.username;
-    user.email = email || user.email;
-
-    await user.save();
-
-    res.status(200).json({ message: 'User updated successfully' });
-  } catch (err) {
-    console.error(`Error updating user with ID ${userId}:`, err);
-    res.status(500).json({ message: 'Error updating user' });
-  }
-};
-
-// Delete a user
-exports.deleteUser = async (req, res) => {
-  const userId = req.params.id;
-
-  try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    await user.remove();
-
-    res.status(200).json({ message: 'User deleted successfully' });
-  } catch (err) {
-    console.error(`Error deleting user with ID ${userId}:`, err);
-    res.status(500).json({ message: 'Error deleting user' });
-  }
-};
-
-// Upload documents for a user
-exports.uploadDocuments = async (req, res) => {
-  try {
-    const { uid } = req.params;
-    const user = await User.findById(uid);
+    const { id } = req.params;
+    const user = await User.findById(id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    const documents = req.files.map(file => ({
-      name: file.fieldname,
-      reference: file.path,
-    }));
-
-    user.documents.push(...documents);
-    await user.save();
-
-    res.status(200).json({ message: 'Documents uploaded successfully', documents: user.documents });
-  } catch (err) {
-    console.error('Error uploading documents:', err);
-    res.status(500).json({ message: 'Error uploading documents' });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener el usuario' });
   }
 };
 
-// Upgrade user to premium
-exports.upgradeToPremium = async (req, res) => {
+// Modificar el rol de un usuario
+export const updateUserRole = async (req, res) => {
   try {
-    const { uid } = req.params;
-    const user = await User.findById(uid);
+    const { id } = req.params;
+    const { role } = req.body;
+    const user = await User.findById(id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    const requiredDocs = ['Identification', 'Proof of Address', 'Proof of Account'];
-    const uploadedDocs = user.documents.map(doc => doc.name);
+    // Verificar permisos para cambiar el rol
+    if (req.user.role === 'admin') {
+      user.role = role || user.role;
+      await user.save();
+      res.json({ message: 'Rol del usuario actualizado con éxito', user });
+    } else {
+      res.status(403).json({ error: 'No tienes permisos para modificar el rol' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar el rol del usuario' });
+  }
+};
 
-    const hasRequiredDocs = requiredDocs.every(doc => uploadedDocs.includes(doc));
+// Eliminar un usuario
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
 
-    if (!hasRequiredDocs) {
-      return res.status(400).json({ message: 'Required documents not uploaded' });
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
-    user.role = 'premium';
-    await user.save();
+    // Verificar permisos para eliminar el usuario
+    if (req.user.role === 'admin') {
+      await User.deleteOne({ _id: id });
 
-    res.status(200).json({ message: 'User upgraded to premium successfully' });
-  } catch (err) {
-    console.error('Error upgrading to premium:', err);
-    res.status(500).json({ message: 'Error upgrading to premium' });
+      // Enviar notificación por correo
+      await sendEmailNotification(user.email, 'Tu cuenta ha sido eliminada.');
+
+      res.json({ message: 'Usuario eliminado con éxito' });
+    } else {
+      res.status(403).json({ error: 'No tienes permisos para eliminar este usuario' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar el usuario' });
   }
 };

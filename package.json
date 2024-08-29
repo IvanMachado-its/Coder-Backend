@@ -18,6 +18,7 @@
     "mongoose-paginate-v2": "^1.8.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.14",
     "nodemon": "^3.1.0",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
@@ -33,11 +34,12 @@
   "name": "programacion-backend",
   "description": "��#\u0000 \u0000C\u0000o\u0000d\u0000e\u0000r\u0000-\u0000B\u0000a\u0000c\u0000k\u0000e\u0000n\u0000d\u0000\r\u0000 \u0000",
   "version": "1.0.0",
+  "type": "module",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon app.js",
-    "start": "node app.js"
+    "dev": "nodemon index.js",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
