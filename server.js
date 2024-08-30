@@ -20,12 +20,11 @@ connectDB();
 const sessionSecret = crypto.randomBytes(32).toString('hex');
 console.log(`Generated Session Secret: ${sessionSecret}`);
 
-// Configurar express-handlebars como motor de vistas con parciales
+// Configurar express-handlebars como motor de vistas
 const hbs = create({
-    extname: '.handlebars',              
-    partialsDir: './views/partials',    
+    extname: '.handlebars',
+    partialsDir: './views/partials',
 });
-
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', './views');
@@ -51,14 +50,29 @@ app.use(passport.session());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Ruta para la página principal
-app.get('/', (req, res) => {
-    res.render('index');
-});
-
+// Rutas Estáticas
 app.use(express.static('public'));
 
-// Rutas
+// Definición de las rutas para las vistas
+app.get('/', (req, res) => {
+    res.render('index', { title: 'Tienda Online' });
+});
+
+app.get('/login', (req, res) => {
+    res.render('login', { title: 'Iniciar Sesión' });
+});
+
+app.get('/register', (req, res) => {
+    res.render('register', { title: 'Registro' });
+});
+
+app.get('/cart', (req, res) => {
+    // Simulando un carrito para la vista
+    const cart = { products: [], total: 0 };
+    res.render('cart', { title: 'Carrito de Compras', cart });
+});
+
+// Usa las rutas definidas en los archivos de rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
