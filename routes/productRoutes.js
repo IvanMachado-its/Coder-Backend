@@ -6,13 +6,16 @@ import {
     getProductById,
     getProducts
 } from '../controllers/productController.js';
-import { isAdmin, isPremiumUser } from '../middlewares/authMiddleware.js';
+import { isAuthenticated, isPremiumUser } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/', isPremiumUser, createProduct);
-router.put('/:id', isPremiumUser, updateProduct);
-router.delete('/:id', isPremiumUser, deleteProduct);
+
+router.post('/', isAuthenticated, isPremiumUser, createProduct);
+router.put('/:id', isAuthenticated, isPremiumUser, updateProduct);
+router.delete('/:id', isAuthenticated, isPremiumUser, deleteProduct);
+
+// Rutas públicas para ver productos
 router.get('/:id', getProductById);
 router.get('/', getProducts);
 

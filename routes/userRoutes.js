@@ -5,13 +5,14 @@ import {
     updateUserRole,
     deleteUser
 } from '../controllers/userController.js';
-import { isAdmin } from '../middlewares/authMiddleware.js';
+import { isAuthenticated, isAdmin } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/', getUsers);
-router.delete('/', isAdmin, deleteInactiveUsers);
-router.put('/:id/role', isAdmin, updateUserRole);
-router.delete('/:id', isAdmin, deleteUser);
+
+router.get('/', isAuthenticated, isAdmin, getUsers);
+router.delete('/', isAuthenticated, isAdmin, deleteInactiveUsers);
+router.put('/:id/role', isAuthenticated, isAdmin, updateUserRole);
+router.delete('/:id', isAuthenticated, isAdmin, deleteUser);
 
 export default router;

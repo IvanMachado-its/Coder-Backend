@@ -3,29 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Usuario</title>
+    <title>Panel de Control</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     {{> header}}
 
-    <h1>Bienvenido, {{user.name}}</h1>
-    <div>
-        <h2>Tus Productos</h2>
-        <a href="/product/create">Crear Producto</a>
-        {{#each products}}
-        <div>
-            <h3>{{this.name}}</h3>
-            <p>{{this.description}}</p>
-            <p>Precio: ${{this.price}}</p>
-            <a href="/product/edit/{{this._id}}">Editar</a>
-            <form action="/product/delete/{{this._id}}" method="POST">
-                <button type="submit">Eliminar</button>
-            </form>
-        </div>
-        {{/each}}
-    </div>
+    <main class="container">
+        <h1>Panel de Control</h1>
+        
+        <!-- Opciones del Usuario Premium -->
+        {{#ifEquals user.role "premium"}}
+        <section>
+            <h2>Gestión de Productos</h2>
+            <a href="#" class="btn" id="create-product-btn">Crear Producto</a>
+            <div class="products">
+                {{#each products}}
+                <div class="product-card">
+                    <h3>{{this.name}}</h3>
+                    <p>{{this.description}}</p>
+                    <p>Precio: ${{this.price}}</p>
+                    <a href="#" class="btn edit-product-btn" data-id="{{this._id}}">Editar</a>
+                    <form action="/products/{{this._id}}" method="POST" style="display:inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="btn">Eliminar</button>
+                    </form>
+                </div>
+                {{/each}}
+            </div>
+        </section>
+        {{/ifEquals}}
+
+        <!-- Opciones del Administrador -->
+        {{#ifEquals user.role "admin"}}
+        <section>
+            <h2>Gestión de Usuarios</h2>
+            <ul>
+                {{#each users}}
+                <li>
+                    <h3>{{this.name}}</h3>
+                    <p>Correo: {{this.email}}</p>
+                    <p>Rol: {{this.role}}</p>
+                    <form action="/users/{{this._id}}/role" method="POST" style="display:inline;">
+                        <input type="hidden" name="_method" value="PUT">
+                        <select name="role" required>
+                            <option value="user" {{#ifEquals this.role "user"}}selected{{/ifEquals}}>Usuario</option>
+                            <option value="admin" {{#ifEquals this.role "admin"}}selected{{/ifEquals}}>Administrador</option>
+                            <option value="premium" {{#ifEquals this.role "premium"}}selected{{/ifEquals}}>Premium</option>
+                        </select>
+                        <button type="submit" class="btn">Actualizar Rol</button>
+                    </form>
+                    <form action="/users/{{this._id}}" method="POST" style="display:inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="btn">Eliminar</button>
+                    </form>
+                </li>
+                {{/each}}
+            </ul>
+        </section>
+        {{/ifEquals}}
+
+        <!-- Opciones para Todos los Usuarios -->
+        <section>
+            <h2>Información de Cuenta</h2>
+            <p>Nombre: {{user.name}}</p>
+            <p>Email: {{user.email}}</p>
+            <a href="/logout" class="btn">Cerrar Sesión</a>
+        </section>
+    </main>
 
     {{> footer}}
+
+    <!-- Scripts específicos del dashboard -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const createProductBtn = document.getElementById('create-product-btn');
+            const editProductBtns = document.querySelectorAll('.edit-product-btn');
+
+            if (createProductBtn) {
+                createProductBtn.addEventListener('click', function () {
+                    window.location.href = '/products/create';
+                });
+            }
+
+            if (editProductBtns.length > 0) {
+                editProductBtns.forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const productId = this.getAttribute('data-id');
+                        window.location.href = `/products/edit/${productId}`;
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html>
