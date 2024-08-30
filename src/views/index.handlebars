@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda Online</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    {{> header}}
+
+    <h1>Bienvenido a la Tienda Online</h1>
+    <div>
+        <a href="/login">Iniciar sesión</a>
+        <a href="/register">Registrarse</a>
+    </div>
+    <div>
+        <h2>Productos Destacados</h2>
+        {{#each products}}
+        <div>
+            <h3>{{this.name}}</h3>
+            <p>{{this.description}}</p>
+            <p>Precio: ${{this.price}}</p>
+            <a href="/cart/add/{{this._id}}">Añadir al Carrito</a>
+        </div>
+        {{/each}}
+    </div>
+
+    {{> footer}}
+</body>
+</html>

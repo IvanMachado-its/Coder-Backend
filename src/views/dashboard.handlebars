@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Usuario</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    {{> header}}
+
+    <h1>Bienvenido, {{user.name}}</h1>
+    <div>
+        <h2>Tus Productos</h2>
+        <a href="/product/create">Crear Producto</a>
+        {{#each products}}
+        <div>
+            <h3>{{this.name}}</h3>
+            <p>{{this.description}}</p>
+            <p>Precio: ${{this.price}}</p>
+            <a href="/product/edit/{{this._id}}">Editar</a>
+            <form action="/product/delete/{{this._id}}" method="POST">
+                <button type="submit">Eliminar</button>
+            </form>
+        </div>
+        {{/each}}
+    </div>
+
+    {{> footer}}
+</body>
+</html>
