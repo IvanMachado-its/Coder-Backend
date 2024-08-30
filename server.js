@@ -39,6 +39,9 @@ app.use(express.urlencoded({ extended: true }));
 // Configuración de vistas
 app.set('view engine', 'handlebars');
 app.set('views', './views');
+app.get('/', (req, res) => {
+    res.render('index');
+});
 app.use(express.static('public'));
 
 
