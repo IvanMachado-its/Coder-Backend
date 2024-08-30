@@ -9,7 +9,7 @@ import cartRoutes from './routes/cartRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import crypto from 'crypto';
 import MongoStore from 'connect-mongo';
-import exphbs from 'express-handlebars';
+import { create } from 'express-handlebars';  // Usa la función `create`
 
 const app = express();
 
@@ -21,9 +21,10 @@ const sessionSecret = crypto.randomBytes(32).toString('hex');
 console.log(`Generated Session Secret: ${sessionSecret}`);
 
 // Configurar express-handlebars como motor de vistas
-app.engine('handlebars', exphbs());  
-app.set('view engine', 'handlebars');  
-app.set('views', './views');  
+const hbs = create({ extname: '.handlebars' });  // Configura express-handlebars
+app.engine('handlebars', hbs.engine);  // Usa la función `engine` desde el objeto `hbs`
+app.set('view engine', 'handlebars');
+app.set('views', './views');
 
 // Middleware de sesiones con MongoDB
 app.use(session({
@@ -48,7 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Ruta para la página principal
 app.get('/', (req, res) => {
-    res.render('index');  
+    res.render('index');
 });
 
 app.use(express.static('public'));
