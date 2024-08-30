@@ -9,7 +9,7 @@ import cartRoutes from './routes/cartRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import crypto from 'crypto';
 import MongoStore from 'connect-mongo';
-import { create } from 'express-handlebars';  // Usa la función `create`
+import { create } from 'express-handlebars';
 
 const app = express();
 
@@ -20,9 +20,13 @@ connectDB();
 const sessionSecret = crypto.randomBytes(32).toString('hex');
 console.log(`Generated Session Secret: ${sessionSecret}`);
 
-// Configurar express-handlebars como motor de vistas
-const hbs = create({ extname: '.handlebars' });  // Configura express-handlebars
-app.engine('handlebars', hbs.engine);  // Usa la función `engine` desde el objeto `hbs`
+// Configurar express-handlebars como motor de vistas con parciales
+const hbs = create({
+    extname: '.handlebars',              
+    partialsDir: './views/partials',    
+});
+
+app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
