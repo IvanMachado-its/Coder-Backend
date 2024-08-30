@@ -7,17 +7,25 @@ import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import crypto from 'crypto';
 
 const app = express();
 
 // Conectar a la base de datos
 connectDB();
 
+// Generar un secreto de sesión aleatorio
+const sessionSecret = crypto.randomBytes(32).toString('hex');
+console.log(`Generated Session Secret: ${sessionSecret}`);
+
 // Middleware de sesiones
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: sessionSecret,  // Utilizando el secreto generado
     resave: false,
     saveUninitialized: true,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',  
+    },
 }));
 
 // Middleware de Passport
