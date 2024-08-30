@@ -8,6 +8,7 @@ import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
 import crypto from 'crypto';
+import MongoStore from 'connect-mongo';
 
 const app = express();
 
@@ -18,13 +19,16 @@ connectDB();
 const sessionSecret = crypto.randomBytes(32).toString('hex');
 console.log(`Generated Session Secret: ${sessionSecret}`);
 
-// Middleware de sesiones
+// Middleware de sesiones con MongoDB
 app.use(session({
-    secret: sessionSecret,  
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: true,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+    }),
     cookie: {
-        secure: process.env.NODE_ENV === 'production',  
+        secure: process.env.NODE_ENV === 'production',
     },
 }));
 
@@ -39,12 +43,13 @@ app.use(express.urlencoded({ extended: true }));
 // Configuración de vistas
 app.set('view engine', 'handlebars');
 app.set('views', './views');
+
+// Ruta para la página principal
 app.get('/', (req, res) => {
-    res.render('index');
+    res.render('/views/index');
 });
+
 app.use(express.static('public'));
-
-
 
 // Rutas
 app.use('/api/auth', authRoutes);
