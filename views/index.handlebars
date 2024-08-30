@@ -9,23 +9,26 @@
 <body>
     {{> header}}
 
-    <h1>Bienvenido a la Tienda Online</h1>
-    <div>
-        <a href="/login">Iniciar sesión</a>
-        <a href="/register">Registrarse</a>
-    </div>
-    <div>
-        <h2>Productos Destacados</h2>
-        {{#each products}}
-        <div>
-            <h3>{{this.name}}</h3>
-            <p>{{this.description}}</p>
-            <p>Precio: ${{this.price}}</p>
-            <a href="/cart/add/{{this._id}}">Añadir al Carrito</a>
+    <main class="container">
+        <h1>Bienvenido a la Tienda Online</h1>
+        <div class="auth-links">
+            <a href="/login" class="btn">Iniciar sesión</a>
+            <a href="/register" class="btn">Registrarse</a>
         </div>
-        {{/each}}
-    </div>
+        <div class="products">
+            <h2>Productos Destacados</h2>
+            {{#each products}}
+            <div class="product-card">
+                <h3>{{this.name}}</h3>
+                <p>{{this.description}}</p>
+                <p>Precio: ${{this.price}}</p>
+                <a href="/cart/add/{{this._id}}" class="btn">Añadir al Carrito</a>
+            </div>
+            {{/each}}
+        </div>
+    </main>
 
     {{> footer}}
 </body>
 </html>
+
