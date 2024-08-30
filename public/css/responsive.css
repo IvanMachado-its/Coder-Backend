@@ -1,0 +1,56 @@
+/* ===============================
+   MEDIA QUERIES
+   =============================== */
+
+/* Tablets */
+@media (max-width: 768px) {
+    header nav ul {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    header p {
+        font-size: 0.9rem;
+    }
+
+    main h1 {
+        font-size: 2rem;
+    }
+
+    main p {
+        font-size: 1rem;
+    }
+}
+
+/* Smartphones */
+@media (max-width: 480px) {
+    header nav ul {
+        padding: 1rem;
+    }
+
+    main h1 {
+        font-size: 1.5rem;
+    }
+
+    main p {
+        font-size: 0.9rem;
+    }
+
+    main .btn {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+    
+    footer ul {
+        flex-direction: column;
+        padding: 0;
+    }
+
+    footer ul li {
+        margin: 0.5rem 0;
+    }
+
+    footer p {
+        font-size: 0.8rem;
+    }
+}

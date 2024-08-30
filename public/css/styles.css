@@ -1,0 +1,144 @@
+/* ===============================
+   VARIABLES
+   =============================== */
+   :root {
+    --primary-color: #4CAF50; /* Verde */
+    --secondary-color: #333; /* Gris oscuro */
+    --accent-color: #FFC107; /* Amarillo */
+    --background-color: #f4f4f4; /* Gris claro */
+    --text-color: #333;
+    --text-light-color: #777;
+    --font-family: 'Helvetica Neue', Arial, sans-serif;
+    --container-width: 1200px;
+    --padding: 1rem;
+}
+
+/* ===============================
+   GLOBAL STYLES
+   =============================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    color: var(--text-color);
+    background-color: var(--background-color);
+    line-height: 1.6;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ===============================
+   CONTAINER
+   =============================== */
+.container {
+    width: 90%;
+    max-width: var(--container-width);
+    margin: 0 auto;
+}
+
+/* ===============================
+   HEADER & NAVIGATION
+   =============================== */
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: var(--padding) 0;
+}
+
+header nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+header nav ul li {
+    margin: 0 1rem;
+}
+
+header nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+header p {
+    text-align: center;
+    margin-top: var(--padding);
+}
+
+/* ===============================
+   MAIN CONTENT
+   =============================== */
+main {
+    padding: var(--padding) 0;
+}
+
+main h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: var(--padding);
+}
+
+main p {
+    text-align: center;
+    color: var(--text-light-color);
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+main .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--accent-color);
+    color: var(--secondary-color);
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+main .btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* ===============================
+   FOOTER
+   =============================== */
+footer {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: var(--padding) 0;
+    text-align: center;
+}
+
+footer ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    padding-bottom: var(--padding);
+}
+
+footer ul li {
+    margin: 0 1rem;
+}
+
+footer ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+footer p {
+    margin-top: var(--padding);
+    font-size: 0.9rem;
+    color: var(--text-light-color);
+}
