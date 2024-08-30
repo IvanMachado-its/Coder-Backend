@@ -20,7 +20,7 @@ console.log(`Generated Session Secret: ${sessionSecret}`);
 
 // Middleware de sesiones
 app.use(session({
-    secret: sessionSecret,  // Utilizando el secreto generado
+    secret: sessionSecret,  
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -38,7 +38,10 @@ app.use(express.urlencoded({ extended: true }));
 
 // Configuración de vistas
 app.set('view engine', 'handlebars');
+app.set('views', './views');
 app.use(express.static('public'));
+
+
 
 // Rutas
 app.use('/api/auth', authRoutes);
