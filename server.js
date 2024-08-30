@@ -46,7 +46,7 @@ app.set('views', './views');
 
 // Ruta para la página principal
 app.get('/', (req, res) => {
-    res.render('/views/index');
+    res.render('index');
 });
 
 app.use(express.static('public'));
