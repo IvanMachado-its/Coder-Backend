@@ -7,8 +7,6 @@ import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
-import { deleteProduct } from './controllers/productController.js';
-import { updateProduct } from './controllers/productController.js';
 import MongoStore from 'connect-mongo';
 import { create } from 'express-handlebars';
 import bcrypt from 'bcryptjs';
@@ -20,19 +18,18 @@ dotenv.config();
 
 // Importa los middlewares de autenticación
 import { isAuthenticated, isAdmin } from './middlewares/authMiddleware.js';
-// Importa las funciones del controlador de usuarios y productos
 import { getUsers, updateUserRole, deleteUser, deleteInactiveUsers } from './controllers/userController.js';
-import { renderProducts } from './controllers/productController.js';  // <-- Asegúrate de importar renderProducts
-
+import { renderProducts,deleteProduct,updateProduct  } from './controllers/productController.js';  
+import { getCart, addToCart, removeFromCart, checkout } from './controllers/cartController.js';
 const app = express();
 
 // Conectar a la base de datos
 connectDB();
 
 // **Definir `sessionSecret` y `hashedSecret` aquí**:
-const sessionSecret = process.env.SESSION_SECRET || 'defaultSecret';  // Usar un valor por defecto si no está definido en .env
+const sessionSecret = process.env.SESSION_SECRET;  
 const saltRounds = 10;
-const hashedSecret = bcrypt.hashSync(sessionSecret, saltRounds);  // Generar el hash del secreto de sesión
+const hashedSecret = bcrypt.hashSync(sessionSecret, saltRounds); 
 
 // Configurar express-handlebars como motor de vistas
 const hbs = create({
@@ -99,6 +96,12 @@ app.get('/users', isAuthenticated, isAdmin, getUsers);
 app.post('/users/:id/role', isAuthenticated, isAdmin, updateUserRole); 
 app.post('/users/delete-inactive', isAuthenticated, isAdmin, deleteInactiveUsers); 
 app.post('/users/:id/delete', isAuthenticated, isAdmin, deleteUser); 
+
+// Rutas de carrito
+app.get('/', isAuthenticated, getCart);
+app.post('/add', isAuthenticated, addToCart);
+app.post('/remove/:productId', isAuthenticated, removeFromCart);
+app.post('/checkout', isAuthenticated, checkout);
 
 // Rutas de API
 app.use('/api/auth', authRoutes);
