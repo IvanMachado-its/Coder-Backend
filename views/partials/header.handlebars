@@ -6,6 +6,7 @@
             {{#if user}}
                 <li><a href="/profile">Perfil</a></li>
                 <li><a href="/cart">Carrito</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
                 <li><a href="/logout">Cerrar Sesión</a></li>
             {{else}}
                 <li><a href="/login">Iniciar Sesión</a></li>
@@ -14,6 +15,6 @@
         </ul>
     </nav>
     {{#if user}}
-        <p>Bienvenido, {{user.name}}!</p>
+        <p>Bienvenido, {{this.name}}!</p>
     {{/if}}
 </header>

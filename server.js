@@ -6,32 +6,56 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
-import paymentRoutes from './routes/paymentRoutes.js';
-import crypto from 'crypto';
+import dashboardRoutes from './routes/dashboardRoutes.js';
+import { deleteProduct } from './controllers/productController.js';
+import { updateProduct } from './controllers/productController.js';
 import MongoStore from 'connect-mongo';
 import { create } from 'express-handlebars';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+import methodOverride from 'method-override';
+
+// Cargar variables de entorno desde .env
+dotenv.config();
+
+// Importa los middlewares de autenticación
+import { isAuthenticated, isAdmin } from './middlewares/authMiddleware.js';
+// Importa las funciones del controlador de usuarios y productos
+import { getUsers, updateUserRole, deleteUser, deleteInactiveUsers } from './controllers/userController.js';
+import { renderProducts } from './controllers/productController.js';  // <-- Asegúrate de importar renderProducts
 
 const app = express();
 
 // Conectar a la base de datos
 connectDB();
 
-// Generar un secreto de sesión aleatorio
-const sessionSecret = crypto.randomBytes(32).toString('hex');
-console.log(`Generated Session Secret: ${sessionSecret}`);
+// **Definir `sessionSecret` y `hashedSecret` aquí**:
+const sessionSecret = process.env.SESSION_SECRET || 'defaultSecret';  // Usar un valor por defecto si no está definido en .env
+const saltRounds = 10;
+const hashedSecret = bcrypt.hashSync(sessionSecret, saltRounds);  // Generar el hash del secreto de sesión
 
 // Configurar express-handlebars como motor de vistas
 const hbs = create({
     extname: '.handlebars',
     partialsDir: './views/partials',
+    helpers: {
+        ifEquals: function(arg1, arg2, options) {
+            return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+        }
+    },
+    runtimeOptions: {
+        allowProtoPropertiesByDefault: true,
+        allowProtoMethodsByDefault: true,
+    }
 });
+
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
 // Middleware de sesiones con MongoDB
 app.use(session({
-    secret: sessionSecret,
+    secret: hashedSecret,
     resave: false,
     saveUninitialized: true,
     store: MongoStore.create({
@@ -50,34 +74,37 @@ app.use(passport.session());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Middleware para soportar PUT y DELETE en formularios HTML
+app.use(methodOverride('_method'));
+
 // Rutas Estáticas
 app.use(express.static('public'));
 
 // Definición de las rutas para las vistas
-app.get('/', (req, res) => {
-    res.render('index', { title: 'Tienda Online' });
-});
+app.get('/', (req, res, next) => renderProducts(req, res, next, 'index', 'Tienda Online'));
 
-app.get('/login', (req, res) => {
-    res.render('login', { title: 'Iniciar Sesión' });
-});
+app.get('/products', (req, res, next) => renderProducts(req, res, next, 'products', 'Productos'));
+app.get('/login', (req, res) => res.render('login', { title: 'Iniciar Sesión' }));
+app.get('/register', (req, res) => res.render('register', { title: 'Registro' }));
 
-app.get('/register', (req, res) => {
-    res.render('register', { title: 'Registro' });
-});
+// Integrar las rutas del dashboard
+app.use('/dashboard', isAuthenticated, dashboardRoutes);
+app.use('/products', productRoutes);
 
-app.get('/cart', (req, res) => {
-    // Simulando un carrito para la vista
-    const cart = { products: [], total: 0 };
-    res.render('cart', { title: 'Carrito de Compras', cart });
-});
+app.post('/products/:id/delete', isAuthenticated, isAdmin, deleteProduct);
+app.post('/products/:id/update', isAuthenticated, isAdmin, updateProduct); 
 
-// Usa las rutas definidas en los archivos de rutas
+// Rutas de Gestión de Usuarios
+app.get('/users', isAuthenticated, isAdmin, getUsers); 
+app.post('/users/:id/role', isAuthenticated, isAdmin, updateUserRole); 
+app.post('/users/delete-inactive', isAuthenticated, isAdmin, deleteInactiveUsers); 
+app.post('/users/:id/delete', isAuthenticated, isAdmin, deleteUser); 
+
+// Rutas de API
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
-app.use('/api/payment', paymentRoutes);
 
 // Puerto y arranque del servidor
 const PORT = process.env.PORT || 8080;

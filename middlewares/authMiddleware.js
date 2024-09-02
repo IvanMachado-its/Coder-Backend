@@ -1,16 +1,11 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-/**
- * Middleware para verificar si el usuario está autenticado.
- */
 export const isAuthenticated = async (req, res, next) => {
-    const authHeader = req.header('Authorization');
-    if (!authHeader) {
-        return res.status(401).json({ message: 'No autorizado, falta el token' });
+    const token = req.session.token;
+    if (!token) {
+        return res.redirect('/login');
     }
-
-    const token = authHeader.replace('Bearer ', '');
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -25,9 +20,6 @@ export const isAuthenticated = async (req, res, next) => {
     }
 };
 
-/**
- * Middleware para verificar si el usuario es administrador.
- */
 export const isAdmin = (req, res, next) => {
     if (req.user && req.user.role === 'admin') {
         return next();
@@ -36,9 +28,6 @@ export const isAdmin = (req, res, next) => {
     }
 };
 
-/**
- * Middleware para verificar si el usuario es premium o administrador.
- */
 export const isPremiumUser = (req, res, next) => {
     if (req.user && (req.user.role === 'premium' || req.user.role === 'admin')) {
         return next();

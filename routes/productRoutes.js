@@ -1,22 +1,21 @@
 import express from 'express';
-import {
-    createProduct,
-    updateProduct,
-    deleteProduct,
-    getProductById,
-    getProducts
-} from '../controllers/productController.js';
-import { isAuthenticated, isPremiumUser } from '../middlewares/authMiddleware.js';
+import { isAuthenticated, isAdmin } from '../middlewares/authMiddleware.js';
+import { createProduct, updateProduct, deleteProduct, renderProducts } from '../controllers/productController.js';
 
 const router = express.Router();
 
+// Mostrar todos los productos
+router.get('/', (req, res, next) => renderProducts(req, res, next, 'products', 'Productos'));
 
-router.post('/', isAuthenticated, isPremiumUser, createProduct);
-router.put('/:id', isAuthenticated, isPremiumUser, updateProduct);
-router.delete('/:id', isAuthenticated, isPremiumUser, deleteProduct);
+// Crear un nuevo producto
+router.post('/', isAuthenticated, isAdmin, createProduct);
 
-// Rutas públicas para ver productos
-router.get('/:id', getProductById);
-router.get('/', getProducts);
+// Editar un producto
+router.put('/:id', isAuthenticated, isAdmin, updateProduct);
+
+// Eliminar un producto
+router.delete('/:id', isAuthenticated, isAdmin, deleteProduct);
+
 
 export default router;
+

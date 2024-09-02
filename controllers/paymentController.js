@@ -12,10 +12,8 @@ export const processPayment = async (req, res) => {
             return res.status(400).json({ message: 'El carrito está vacío' });
         }
 
-        // Calcular el total del carrito
         const amount = cart.products.reduce((total, item) => total + item.product.price * item.quantity, 0);
 
-        // Crear el pago en Stripe
         const paymentIntent = await stripe.paymentIntents.create({
             amount: Math.round(amount * 100), // Convertir a centavos
             currency: 'usd',
@@ -27,7 +25,6 @@ export const processPayment = async (req, res) => {
             return res.status(400).json({ message: 'El pago no se ha realizado con éxito' });
         }
 
-        // Generar el ticket de compra
         const ticket = new Ticket({
             user: req.user._id,
             products: cart.products,
@@ -37,10 +34,8 @@ export const processPayment = async (req, res) => {
 
         await ticket.save();
 
-        // Enviar ticket por correo electrónico
         sendTicketEmail(req.user.email, ticket);
 
-        // Vaciar el carrito después del pago
         cart.products = [];
         await cart.save();
 
@@ -50,7 +45,6 @@ export const processPayment = async (req, res) => {
     }
 };
 
-// Función para enviar el ticket por correo electrónico
 const sendTicketEmail = (email, ticket) => {
     const transporter = nodemailer.createTransport({
         service: 'Gmail',

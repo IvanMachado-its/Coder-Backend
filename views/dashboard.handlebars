@@ -7,24 +7,46 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    {{> header}}
+    <section>
+        <h2>Información de Cuenta</h2>
+        <p>Nombre: {{user.name}}</p>
+        <p>Email: {{user.email}}</p>
+    </section>
 
     <main class="container">
         <h1>Panel de Control</h1>
-        
-        <!-- Opciones del Usuario Premium -->
-        {{#ifEquals user.role "premium"}}
+        <p>Bienvenido, {{user.name}}!</p>
+
+        <section>
+            <h2>Crear Producto</h2>
+            <form action="/api/products" method="POST">
+                <div>
+                    <label for="name">Nombre del Producto</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div>
+                    <label for="description">Descripción</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+                <div>
+                    <label for="price">Precio</label>
+                    <input type="number" id="price" name="price" required>
+                </div>
+                <button type="submit" class="btn">Crear Producto</button>
+            </form>
+        </section>
+
+        <!-- Sección para mostrar y gestionar productos -->
         <section>
             <h2>Gestión de Productos</h2>
-            <a href="#" class="btn" id="create-product-btn">Crear Producto</a>
             <div class="products">
                 {{#each products}}
                 <div class="product-card">
                     <h3>{{this.name}}</h3>
                     <p>{{this.description}}</p>
                     <p>Precio: ${{this.price}}</p>
-                    <a href="#" class="btn edit-product-btn" data-id="{{this._id}}">Editar</a>
-                    <form action="/products/{{this._id}}" method="POST" style="display:inline;">
+                    <a href="/products/{{this._id}}/edit" class="btn">Editar</a>
+                    <form action="/products/{{this._id}}/delete" method="POST" style="display:inline;">
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="btn">Eliminar</button>
                     </form>
@@ -32,10 +54,8 @@
                 {{/each}}
             </div>
         </section>
-        {{/ifEquals}}
 
-        <!-- Opciones del Administrador -->
-        {{#ifEquals user.role "admin"}}
+        <!-- Sección para gestión de usuarios -->
         <section>
             <h2>Gestión de Usuarios</h2>
             <ul>
@@ -53,7 +73,7 @@
                         </select>
                         <button type="submit" class="btn">Actualizar Rol</button>
                     </form>
-                    <form action="/users/{{this._id}}" method="POST" style="display:inline;">
+                    <form action="/users/{{this._id}}/delete" method="POST" style="display:inline;">
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="btn">Eliminar</button>
                     </form>
@@ -61,40 +81,7 @@
                 {{/each}}
             </ul>
         </section>
-        {{/ifEquals}}
 
-        <!-- Opciones para Todos los Usuarios -->
-        <section>
-            <h2>Información de Cuenta</h2>
-            <p>Nombre: {{user.name}}</p>
-            <p>Email: {{user.email}}</p>
-            <a href="/logout" class="btn">Cerrar Sesión</a>
-        </section>
     </main>
-
-    {{> footer}}
-
-    <!-- Scripts específicos del dashboard -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const createProductBtn = document.getElementById('create-product-btn');
-            const editProductBtns = document.querySelectorAll('.edit-product-btn');
-
-            if (createProductBtn) {
-                createProductBtn.addEventListener('click', function () {
-                    window.location.href = '/products/create';
-                });
-            }
-
-            if (editProductBtns.length > 0) {
-                editProductBtns.forEach(btn => {
-                    btn.addEventListener('click', function () {
-                        const productId = this.getAttribute('data-id');
-                        window.location.href = `/products/edit/${productId}`;
-                    });
-                });
-            }
-        });
-    </script>
 </body>
 </html>

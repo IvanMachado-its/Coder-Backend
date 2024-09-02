@@ -19,18 +19,15 @@
 
     <!-- Enlaces a CSS externos -->
     <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="/css/responsive.css"> <!-- Opcional, para diseños responsive -->
+    <link rel="stylesheet" href="/css/responsive.css"> 
     
     <!-- Favicon -->
     <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
-    
-    <!-- Scripts adicionales en el <head> -->
-    {{{headScripts}}}
 </head>
 <body>
     <!-- Barra de navegación fija -->
     <header>
-        {{> header }} <!-- Incluir el parcial 'header' -->
+        {{> header }}
     </header>
 
     <!-- Contenido Principal -->
@@ -40,13 +37,10 @@
 
     <!-- Pie de página -->
     <footer>
-        {{> footer }} <!-- Incluir el parcial 'footer' -->
+        {{> footer }} 
     </footer>
 
     <!-- Scripts comunes -->
     <script src="/js/main.js"></script>
-
-    <!-- Scripts adicionales específicos de cada página -->
-    {{{footerScripts}}}
 </body>
 </html>

@@ -1,10 +1,9 @@
 import express from 'express';
+import { isAuthenticated, isAdmin } from '../middlewares/authMiddleware.js';
 import { renderDashboard } from '../controllers/dashboardController.js';
-import { isAuthenticated } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
-// Protege la ruta del dashboard con autenticación
-router.get('/dashboard', isAuthenticated, renderDashboard);
+router.get('/', isAuthenticated, isAdmin, renderDashboard);
 
 export default router;

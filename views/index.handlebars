@@ -7,28 +7,20 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    {{> header}} <!-- Incluido aquí una sola vez -->
-
     <main class="container">
         <h1>Bienvenido a la Tienda Online</h1>
-        <div class="auth-links">
-            <a href="/login" class="btn">Iniciar sesión</a>
-            <a href="/register" class="btn">Registrarse</a>
-        </div>
-        <div class="products">
-            <h2>Productos Destacados</h2>
-            {{#each products}}
-            <div class="product-card">
-                <h3>{{this.name}}</h3>
-                <p>{{this.description}}</p>
-                <p>Precio: ${{this.price}}</p>
-                <a href="/cart/add/{{this._id}}" class="btn">Añadir al Carrito</a>
-            </div>
-            {{/each}}
-        </div>
+<div class="products">
+    <h2>Productos Destacados</h2>
+    {{#each products}}
+    <div class="product-card">
+        <h3>{{this.name}}</h3>
+        <p>{{this.description}}</p>
+        <p>Precio: ${{this.price}}</p>
+        <a href="/cart/add/{{this._id}}" class="btn">Añadir al Carrito</a>
+    </div>
+    {{/each}}
+</div>
     </main>
-
-    {{> footer}} <!-- Footer también incluido una sola vez -->
 </body>
-</html>
 
+</html>

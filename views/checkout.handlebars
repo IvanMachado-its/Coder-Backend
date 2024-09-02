@@ -3,24 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finalizar Compra</title>
+    <title>{{title}}</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    {{> header}}
+    {{> header }}
 
-    <h1>Finalizar Compra</h1>
-    <form action="/api/payment" method="POST" id="payment-form">
-        <div>
-            <label for="card-element">Tarjeta de Crédito/Débito</label>
-            <div id="card-element"></div>
-        </div>
-        <button type="submit">Pagar</button>
-    </form>
+    <main class="container">
+        <h1>Finalizar Compra</h1>
+        <form id="payment-form">
+            <input type="hidden" name="amount" value="{{cart.total}}">
+            <button type="submit">Pagar</button>
+        </form>
+    </main>
 
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="/js/main.js"></script>
+    <script>
+        const stripe = Stripe('{{YOUR_PUBLIC_STRIPE_KEY}}');
 
-    {{> footer}}
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const { id } = await fetch('/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    paymentMethodId: '{{paymentMethodId}}'
+                }),
+            }).then(res => res.json());
+
+            stripe.redirectToCheckout({ sessionId: id });
+        });
+    </script>
+
+    {{> footer }}
 </body>
 </html>
