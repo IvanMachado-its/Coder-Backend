@@ -16,7 +16,7 @@ import methodOverride from 'method-override';
 dotenv.config();
 
 // Verificar que las variables de entorno críticas estén configuradas
-const requiredEnvVars = ['MONGO_URI', 'SESSION_SECRET', 'PORT'];
+const requiredEnvVars = ['MONGO_URI', 'SESSION_SECRET', 'JWT_SECRET', 'PORT'];
 requiredEnvVars.forEach((varName) => {
     if (!process.env[varName]) {
         throw new Error(`La variable de entorno ${varName} no está configurada.`);

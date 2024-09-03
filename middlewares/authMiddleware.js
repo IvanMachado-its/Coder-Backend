@@ -3,8 +3,9 @@ import User from '../models/User.js';
 
 export const isAuthenticated = async (req, res, next) => {
     const token = req.session.token;
+    console.log('Token en la sesión:', token); // Verifica si el token se recibe en la sesión
     if (!token) {
-        return res.redirect('/dashboard');
+        return res.redirect('/login');
     }
 
     try {
@@ -15,7 +16,7 @@ export const isAuthenticated = async (req, res, next) => {
         }
         next();
     } catch (err) {
-        console.error('Error al verificar el token', err);
+        console.error('Error al verificar el token:', err);
         res.status(401).json({ message: 'No autorizado, token no válido' });
     }
 };
