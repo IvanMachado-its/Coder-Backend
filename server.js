@@ -9,51 +9,27 @@ import cartRoutes from './routes/cartRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import MongoStore from 'connect-mongo';
 import { create } from 'express-handlebars';
+import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import methodOverride from 'method-override';
 
 // Cargar variables de entorno desde .env
 dotenv.config();
 
-// Verificar que las variables de entorno críticas estén configuradas
-const requiredEnvVars = ['MONGO_URI', 'SESSION_SECRET', 'JWT_SECRET', 'PORT'];
-requiredEnvVars.forEach((varName) => {
-    if (!process.env[varName]) {
-        throw new Error(`La variable de entorno ${varName} no está configurada.`);
-    }
-});
-
 // Importa los middlewares de autenticación
 import { isAuthenticated, isAdmin } from './middlewares/authMiddleware.js';
 import { getUsers, updateUserRole, deleteUser, deleteInactiveUsers } from './controllers/userController.js';
-import { renderProducts, deleteProduct, updateProduct } from './controllers/productController.js';  
+import { renderProducts,deleteProduct,updateProduct  } from './controllers/productController.js';  
 import { getCart, addToCart, removeFromCart, checkout } from './controllers/cartController.js';
-
 const app = express();
 
 // Conectar a la base de datos
 connectDB();
 
-// Configuración de sesiones
-const sessionSecret = process.env.SESSION_SECRET;
-
-app.use(session({
-    secret: sessionSecret,
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGO_URI,
-        collectionName: 'sessions',      // Especifica la colección en MongoDB
-        ttl: 14 * 24 * 60 * 60,          // 14 días de tiempo de vida para las sesiones
-        autoRemove: 'native',            // Elimina automáticamente las sesiones expiradas
-    }),
-    cookie: {
-        secure: process.env.NODE_ENV === 'production', // Asegura las cookies en producción
-        httpOnly: true,                 // Protege contra ataques XSS
-        maxAge: 24 * 60 * 60 * 1000,    // 1 día de vida para las cookies
-        sameSite: 'strict',             // Protege contra ataques CSRF
-    },
-}));
+// **Definir `sessionSecret` y `hashedSecret` aquí**:
+const sessionSecret = process.env.SESSION_SECRET;  
+const saltRounds = 10;
+const hashedSecret = bcrypt.hashSync(sessionSecret, saltRounds); 
 
 // Configurar express-handlebars como motor de vistas
 const hbs = create({
@@ -74,11 +50,24 @@ app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
+// Middleware de sesiones con MongoDB
+app.use(session({
+    secret: hashedSecret,
+    resave: false,
+    saveUninitialized: true,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+    }),
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+    },
+}));
+
 // Middleware de Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Middleware para parsear JSON y formularios
+// Middleware para parsear JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -87,13 +76,6 @@ app.use(methodOverride('_method'));
 
 // Rutas Estáticas
 app.use(express.static('public'));
-
-// Depuración de sesiones y cookies
-app.use((req, res, next) => {
-    console.log('Sesión actual:', req.session);
-    console.log('Cookies actuales:', req.cookies);
-    next();
-});
 
 // Definición de las rutas para las vistas
 app.get('/', (req, res, next) => renderProducts(req, res, next, 'index', 'Tienda Online'));

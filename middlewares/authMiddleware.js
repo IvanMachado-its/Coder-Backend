@@ -1,11 +1,9 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-
-
 export const isAuthenticated = async (req, res, next) => {
     const token = req.session.token;
-    console.log('Token en la sesión:', token); // Verifica si el token está presente en la sesión
+    console.log('Token en la sesión:', token);
 
     if (!token) {
         console.log('Token no encontrado, redirigiendo al login');
