@@ -31,6 +31,7 @@ const sessionSecret = process.env.SESSION_SECRET;
 const saltRounds = 10;
 const hashedSecret = bcrypt.hashSync(sessionSecret, saltRounds); 
 
+
 // Configurar express-handlebars como motor de vistas
 const hbs = create({
     extname: '.handlebars',
