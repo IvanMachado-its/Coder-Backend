@@ -11,7 +11,7 @@ import MongoStore from 'connect-mongo';
 import { create } from 'express-handlebars';
 import dotenv from 'dotenv';
 import methodOverride from 'method-override';
-import cookieParser from 'cookie-parser';  // Asegúrate de importar cookie-parser
+import cookieParser from 'cookie-parser'; 
 import { isAuthenticated, isAdmin } from './middlewares/authMiddleware.js';
 import { getUsers, updateUserRole, deleteUser, deleteInactiveUsers } from './controllers/userController.js';
 import { renderProducts,deleteProduct,updateProduct  } from './controllers/productController.js';  
