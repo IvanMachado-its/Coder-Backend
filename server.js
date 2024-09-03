@@ -43,10 +43,15 @@ app.use(session({
     saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI,
+        collectionName: 'sessions',      // Especifica la colección en MongoDB
+        ttl: 14 * 24 * 60 * 60,          // 14 días de tiempo de vida para las sesiones
+        autoRemove: 'native',            // Elimina automáticamente las sesiones expiradas
     }),
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 24 * 60 * 60 * 1000, // 1 día
+        secure: process.env.NODE_ENV === 'production', // Asegura las cookies en producción
+        httpOnly: true,                 // Protege contra ataques XSS
+        maxAge: 24 * 60 * 60 * 1000,    // 1 día de vida para las cookies
+        sameSite: 'strict',             // Protege contra ataques CSRF
     },
 }));
 
@@ -83,6 +88,13 @@ app.use(methodOverride('_method'));
 // Rutas Estáticas
 app.use(express.static('public'));
 
+// Depuración de sesiones y cookies
+app.use((req, res, next) => {
+    console.log('Sesión actual:', req.session);
+    console.log('Cookies actuales:', req.cookies);
+    next();
+});
+
 // Definición de las rutas para las vistas
 app.get('/', (req, res, next) => renderProducts(req, res, next, 'index', 'Tienda Online'));
 
@@ -110,7 +122,6 @@ app.post('/remove/:productId', isAuthenticated, removeFromCart);
 app.post('/checkout', isAuthenticated, checkout);
 
 // Rutas de API
-
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
