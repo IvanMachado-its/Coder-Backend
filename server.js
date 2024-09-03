@@ -9,27 +9,46 @@ import cartRoutes from './routes/cartRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import MongoStore from 'connect-mongo';
 import { create } from 'express-handlebars';
-import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import methodOverride from 'method-override';
 
 // Cargar variables de entorno desde .env
 dotenv.config();
 
+// Verificar que las variables de entorno críticas estén configuradas
+const requiredEnvVars = ['MONGO_URI', 'SESSION_SECRET', 'PORT'];
+requiredEnvVars.forEach((varName) => {
+    if (!process.env[varName]) {
+        throw new Error(`La variable de entorno ${varName} no está configurada.`);
+    }
+});
+
 // Importa los middlewares de autenticación
 import { isAuthenticated, isAdmin } from './middlewares/authMiddleware.js';
 import { getUsers, updateUserRole, deleteUser, deleteInactiveUsers } from './controllers/userController.js';
-import { renderProducts,deleteProduct,updateProduct  } from './controllers/productController.js';  
+import { renderProducts, deleteProduct, updateProduct } from './controllers/productController.js';  
 import { getCart, addToCart, removeFromCart, checkout } from './controllers/cartController.js';
+
 const app = express();
 
 // Conectar a la base de datos
 connectDB();
 
-// **Definir `sessionSecret` y `hashedSecret` aquí**:
-const sessionSecret = process.env.SESSION_SECRET;  
-const saltRounds = 10;
-const hashedSecret = bcrypt.hashSync(sessionSecret, saltRounds); 
+// Configuración de sesiones
+const sessionSecret = process.env.SESSION_SECRET;
+
+app.use(session({
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+    }),
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000, // 1 día
+    },
+}));
 
 // Configurar express-handlebars como motor de vistas
 const hbs = create({
@@ -50,24 +69,11 @@ app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
-// Middleware de sesiones con MongoDB
-app.use(session({
-    secret: hashedSecret,
-    resave: false,
-    saveUninitialized: true,
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGO_URI,
-    }),
-    cookie: {
-        secure: process.env.NODE_ENV === 'production',
-    },
-}));
-
 // Middleware de Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Middleware para parsear JSON
+// Middleware para parsear JSON y formularios
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
