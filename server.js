@@ -110,6 +110,7 @@ app.post('/remove/:productId', isAuthenticated, removeFromCart);
 app.post('/checkout', isAuthenticated, checkout);
 
 // Rutas de API
+
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);

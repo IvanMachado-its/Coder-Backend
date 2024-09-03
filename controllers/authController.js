@@ -30,24 +30,22 @@ export const registerUser = async (req, res) => {
 
 // Login de usuario
 export const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-
     try {
+        const { email, password } = req.body;
         const user = await User.findOne({ email });
-        if (user && (await user.matchPassword(password))) {
-            const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
-            req.session.token = token;
 
-            if (user.role === 'admin') {
-                res.redirect('/dashboard');
-            } else {
-                res.redirect('/');
-            }
-        } else {
-            res.status(401).render('login', { title: 'Iniciar Sesión', error: 'Credenciales inválidas' });
+        if (!user || !(await user.matchPassword(password))) {
+            return res.status(401).render('login', { message: 'Credenciales incorrectas' });
         }
-    } catch (err) {
-        console.error(err);
-        res.status(500).render('login', { title: 'Iniciar Sesión', error: 'Error al iniciar sesión' });
+
+        // Generar token
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        req.session.token = token; // Guardar token en la sesión
+
+        console.log('Usuario autenticado, redirigiendo al dashboard');
+        res.redirect('/dashboard');
+    } catch (error) {
+        console.error('Error en el proceso de login:', error);
+        res.status(500).render('login', { message: 'Error al iniciar sesión' });
     }
 };

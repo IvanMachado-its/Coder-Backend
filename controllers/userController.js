@@ -1,6 +1,7 @@
 import User from '../models/User.js';
 import nodemailer from 'nodemailer';
 
+
 // Obtener todos los usuarios
 export const getUsers = async (req, res) => {
     try {
