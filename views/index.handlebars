@@ -7,21 +7,66 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+
+
     <main class="container">
         <h1>Bienvenido a la Tienda Online</h1>
         <h2>Productos Destacados</h2>
-<div class="products">
-    
-    {{#each products}}
-    <div class="product-card">
-        <h3>{{this.name}}</h3>
-        <p>{{this.description}}</p>
-        <p>Precio: ${{this.price}}</p>
-        <a href="/cart/add/{{this._id}}" class="btn">Añadir al Carrito</a>
-    </div>
-    {{/each}}
-</div>
+        <div id="notification" style="display:none;">Producto agregado al carrito</div>
+        <div class="products">
+            {{#each products}}
+            <div class="product-card">
+                <h3>{{this.name}}</h3>
+                <p>{{this.description}}</p>
+                <p>Precio: ${{this.price}}</p>
+                <form class="add-to-cart-form">
+                    <input type="hidden" name="productId" value="{{this._id}}">
+                    <input type="hidden" name="name" value="{{this.name}}">
+                    <input type="hidden" name="price" value="{{this.price}}">
+                    <label for="quantity">Cantidad:</label>
+                    <input type="number" name="quantity" value="1" min="1">
+                    <button type="submit" class="btn">Añadir al Carrito</button>
+                </form>
+            </div>
+            {{/each}}
+        </div>
     </main>
-</body>
 
+    <script>
+        document.querySelectorAll('.add-to-cart-form').forEach(form => {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const data = {
+                    productId: formData.get('productId'),
+                    name: formData.get('name'),
+                    price: parseFloat(formData.get('price')),
+                    quantity: parseInt(formData.get('quantity'), 10)
+                };
+
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const existingProductIndex = cart.findIndex(item => item.productId === data.productId);
+
+                if (existingProductIndex !== -1) {
+                    cart[existingProductIndex].quantity += data.quantity;
+                } else {
+                    cart.push(data);
+                }
+
+                localStorage.setItem('cart', JSON.stringify(cart));
+
+                const cartCount = document.getElementById('cart-count');
+                cartCount.textContent = cart.length;
+
+                const notification = document.getElementById('notification');
+                notification.style.display = 'block';
+                notification.textContent = 'Producto agregado al carrito';
+
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            });
+        });
+    </script>
+</body>
 </html>

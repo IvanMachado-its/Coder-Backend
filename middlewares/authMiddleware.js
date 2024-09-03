@@ -1,24 +1,29 @@
-// middlewares/authMiddleware.js
-
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 export const isAuthenticated = async (req, res, next) => {
-    const token = req.cookies.token;  // Se obtiene el token de la cookie
-    if (!token) {
-        return res.redirect('/login');
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id).select('-password');
-        if (!req.user) {
-            return res.redirect('/login');
+    if (req.cookies.token) {
+        try {
+            const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+            req.user = await User.findById(decoded.id).select('-password');
+            if (req.user) {
+                res.locals.user = req.user;
+                return next();
+            }
+        } catch (err) {
+            console.error('Error al verificar el token:', err);
+            res.clearCookie('token');
         }
-        next();
-    } catch (err) {
-        console.error('Error al verificar el token:', err);
-        return res.redirect('/login');
+    }
+    res.redirect('/login');
+};
+
+// Middleware para permitir solo a usuarios admin y premium acceder al dashboard
+export const isAuthorizedForDashboard = (req, res, next) => {
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'premium')) {
+        return next();
+    } else {
+        return res.redirect('/');  // Redirigir a `index` si el rol es 'user'
     }
 };
 

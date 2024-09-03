@@ -3,30 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrito de Compras</title>
+    <title>{{title}}</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    {{> header}}
 
     <h1>Tu Carrito de Compras</h1>
-    <ul>
-        {{#each cart.products}}
-        <li>
-            <h3>{{this.product.name}}</h3>
-            <p>Cantidad: {{this.quantity}}</p>
-            <p>Precio: ${{this.product.price}}</p>
-            <form action="/cart/remove/{{this.product._id}}" method="POST">
-                <button type="submit">Eliminar</button>
-            </form>
-        </li>
-        {{/each}}
-    </ul>
-    <h2>Total: ${{cart.total}}</h2>
-    <form action="/checkout" method="POST">
-        <button type="submit">Finalizar Compra</button>
-    </form>
+    {{#if cart.products.length}}
+        <ul>
+            {{#each cart.products}}
+            <li>
+                <h3>{{this.product.name}}</h3>
+                <p>Cantidad: {{this.quantity}}</p>
+                <p>Precio: ${{this.product.price}}</p>
+                <form action="/cart/remove/{{this.product._id}}" method="POST">
+                    <button type="submit">Eliminar</button>
+                </form>
+            </li>
+            {{/each}}
+        </ul>
+        <h2>Total: ${{cart.total}}</h2>
+        <form action="/cart/checkout" method="POST">
+            <button type="submit">Finalizar Compra</button>
+        </form>
+    {{else}}
+        <p>Tu carrito está vacío.</p>
+    {{/if}}
 
-    {{> footer}}
 </body>
 </html>

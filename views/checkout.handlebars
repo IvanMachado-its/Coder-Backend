@@ -7,38 +7,67 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    {{> header }}
 
     <main class="container">
+        {{#if user}}
         <h1>Finalizar Compra</h1>
         <form id="payment-form">
-            <input type="hidden" name="amount" value="{{cart.total}}">
+            <div id="card-element">
+                <!-- Elemento de Stripe para la tarjeta -->
+            </div>
             <button type="submit">Pagar</button>
         </form>
+        {{else}}
+        <p>Debes estar <a href="/login">logueado</a> para realizar una compra.</p>
+        {{/if}}
     </main>
 
+    {{#if user}}
     <script src="https://js.stripe.com/v3/"></script>
     <script>
-        const stripe = Stripe('{{YOUR_PUBLIC_STRIPE_KEY}}');
+        document.addEventListener('DOMContentLoaded', () => {
+            const stripe = Stripe('{{YOUR_PUBLIC_STRIPE_KEY}}');
+            const elements = stripe.elements();
+            const cardElement = elements.create('card');
+            cardElement.mount('#card-element');
 
-        const form = document.getElementById('payment-form');
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
+            const form = document.getElementById('payment-form');
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
 
-            const { id } = await fetch('/checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    paymentMethodId: '{{paymentMethodId}}'
-                }),
-            }).then(res => res.json());
+                const { paymentMethod, error } = await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: cardElement,
+                });
 
-            stripe.redirectToCheckout({ sessionId: id });
+                if (error) {
+                    console.error(error);
+                } else {
+                    const cart = JSON.parse(localStorage.getItem('cart')) || [];
+                    const response = await fetch('/cart/checkout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            paymentMethodId: paymentMethod.id,
+                            cart,
+                        }),
+                    });
+
+                    const result = await response.json();
+
+                    if (result.error) {
+                        console.error(result.error);
+                    } else {
+                        localStorage.removeItem('cart'); // Limpiar el carrito después de la compra
+                        window.location.href = '/success';
+                    }
+                }
+            });
         });
     </script>
+    {{/if}}
 
-    {{> footer }}
 </body>
 </html>

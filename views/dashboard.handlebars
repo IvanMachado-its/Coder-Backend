@@ -55,7 +55,8 @@
             </div>
         </section>
 
-        <!-- Sección para gestión de usuarios -->
+        <!-- Mostrar la sección de gestión de usuarios solo si el usuario es admin -->
+        {{#ifEquals user.role "admin"}}
         <section>
             <h2>Gestión de Usuarios</h2>
             <ul>
@@ -81,6 +82,7 @@
                 {{/each}}
             </ul>
         </section>
+        {{/ifEquals}}
 
     </main>
 </body>

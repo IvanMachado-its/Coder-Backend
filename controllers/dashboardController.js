@@ -3,10 +3,19 @@ import User from '../models/User.js';       // Importación del modelo User
 
 export const renderDashboard = async (req, res) => {
     try {
+        // Convertir el usuario a un objeto si es necesario
         const user = req.user.toObject ? req.user.toObject() : req.user;
-        const products = await Product.find().lean();
-        const users = await User.find().lean();       
 
+        // Obtener productos que pertenecen al usuario autenticado
+        const products = await Product.find().lean();
+        let users = [];
+
+        // Si el usuario es admin, cargar todos los usuarios
+        if (user.role === 'admin') {
+            users = await User.find().lean();
+        }
+
+        // Renderizar la vista del dashboard, pasando los productos y usuarios (solo para admin)
         res.render('dashboard', {
             title: 'Panel de Control',
             user, 

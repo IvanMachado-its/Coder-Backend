@@ -1,4 +1,16 @@
+// controllers/productController.js
 import Product from '../models/Product.js';
+import User from '../models/User.js';
+import nodemailer from 'nodemailer';
+
+// Configuración del transporte de nodemailer
+const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 
 // Controlador genérico para renderizar productos en cualquier vista
 export const renderProducts = async (req, res, next, viewName, title, productId = null) => {
@@ -25,7 +37,6 @@ export const createProduct = async (req, res) => {
             return res.status(401).render('error', { message: 'Debe estar autenticado para crear un producto' });
         }
 
-        console.log('Usuario autenticado:', req.user);  // Depuración
         const { name, description, price } = req.body;
 
         // Validación básica
@@ -38,7 +49,7 @@ export const createProduct = async (req, res) => {
         await product.save();
         res.status(201).redirect('/dashboard');
     } catch (err) {
-        console.error('Error en createProduct:', err);  // Depuración detallada
+        console.error('Error en createProduct:', err);
         res.status(500).render('error', { message: 'Error al crear el producto' });
     }
 };
@@ -67,23 +78,40 @@ export const updateProduct = async (req, res) => {
     }
 };
 
+// Eliminar un producto y notificar a un usuario premium
 export const deleteProduct = async (req, res) => {
     try {
-        if (!req.user) {
-            return res.status(401).render('error', { message: 'Debe estar autenticado para eliminar un producto' });
-        }
-
         const product = await Product.findById(req.params.id);
         if (!product) {
             return res.status(404).render('error', { message: 'Producto no encontrado' });
         }
 
-        // Utilizar findByIdAndDelete para eliminar el producto de manera segura
-        await Product.findByIdAndDelete(req.params.id);
+        const user = await User.findById(product.user);
+        if (user && user.role === 'premium') {
+            await sendProductDeletionEmail(user.email, user.name, product.name);
+        }
 
+        await Product.findByIdAndDelete(req.params.id);
         res.redirect('/dashboard');
     } catch (err) {
         console.error('Error al eliminar el producto:', err);
         res.status(500).render('error', { message: 'Error al eliminar el producto' });
+    }
+};
+
+// Función para enviar email de eliminación de producto
+const sendProductDeletionEmail = async (email, name, productName) => {
+    const mailOptions = {
+        from: 'no-reply@ecommerce.com',
+        to: email,
+        subject: 'Producto Eliminado',
+        text: `Hola ${name}, tu producto "${productName}" ha sido eliminado.`,
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Correo enviado: ' + email);
+    } catch (err) {
+        console.error('Error al enviar el correo:', err);
     }
 };

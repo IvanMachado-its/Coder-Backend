@@ -11,15 +11,17 @@ import MongoStore from 'connect-mongo';
 import { create } from 'express-handlebars';
 import dotenv from 'dotenv';
 import methodOverride from 'method-override';
-import cookieParser from 'cookie-parser'; 
+import cookieParser from 'cookie-parser';
+import jwt from 'jsonwebtoken';
+import User from './models/User.js';
 import { isAuthenticated, isAdmin } from './middlewares/authMiddleware.js';
 import { getUsers, updateUserRole, deleteUser, deleteInactiveUsers } from './controllers/userController.js';
-import { renderProducts,deleteProduct,updateProduct  } from './controllers/productController.js';  
+import { registerUser, loginUser, logoutUser } from './controllers/authController.js';
+import { renderProducts, deleteProduct, updateProduct } from './controllers/productController.js';
 import { getCart, addToCart, removeFromCart, checkout } from './controllers/cartController.js';
-// Cargar variables de entorno desde .env
-dotenv.config();
 
-// Crear la aplicación Express
+dotenv.config(); // Cargar variables de entorno desde .env
+
 const app = express();
 
 // Conectar a la base de datos
@@ -35,15 +37,15 @@ app.use(session({
     saveUninitialized: false,
     store: MongoStore.create({
         mongoUrl: process.env.MONGO_URI,
-        collectionName: 'sessions',  // Nombre de la colección en MongoDB
-        ttl: 14 * 24 * 60 * 60,       // 14 días de tiempo de vida para las sesiones
-        autoRemove: 'native',         // Elimina sesiones expiradas automáticamente
+        collectionName: 'sessions',
+        ttl: 15 * 60,  // 15 minutos
+        autoRemove: 'native',
     }),
     cookie: {
-        secure: process.env.NODE_ENV === 'production',  // Asegura cookies solo en producción
-        httpOnly: true,                                 // Evita acceso a la cookie desde JavaScript
-        maxAge: 24 * 60 * 60 * 1000,                    // 1 día de vida para las cookies
-        sameSite: 'strict',                             // Protege contra ataques CSRF
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 15 * 60 * 1000,  // 15 minutos
+        sameSite: 'strict',
     },
 }));
 
@@ -80,17 +82,35 @@ app.use(methodOverride('_method'));
 // Rutas Estáticas
 app.use(express.static('public'));
 
+// Middleware global para establecer `res.locals.user`
+app.use(async (req, res, next) => {
+    if (req.cookies.token) {
+        try {
+            const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+            const user = await User.findById(decoded.id).select('-password');
+            if (user) {
+                req.user = user;
+                res.locals.user = user;
+            }
+        } catch (err) {
+            console.error('Error al verificar el token:', err);
+            res.clearCookie('token');
+        }
+    }
+    next();
+});
+
 // Definición de las rutas para las vistas
 app.get('/', (req, res, next) => renderProducts(req, res, next, 'index', 'Tienda Online'));
-
 app.get('/products', (req, res, next) => renderProducts(req, res, next, 'products', 'Productos'));
+app.get('/checkout', isAuthenticated, (req, res) => res.render('checkout', { title: 'Checkout' }));
 app.get('/login', (req, res) => res.render('login', { title: 'Iniciar Sesión' }));
 app.get('/register', (req, res) => res.render('register', { title: 'Registro' }));
+app.get('/logout', logoutUser);
 
 // Integrar las rutas del dashboard
 app.use('/dashboard', isAuthenticated, dashboardRoutes);
 app.use('/products', productRoutes);
-
 app.post('/products/:id/delete', isAuthenticated, isAdmin, deleteProduct);
 app.post('/products/:id/update', isAuthenticated, isAdmin, updateProduct); 
 
@@ -101,6 +121,7 @@ app.post('/users/delete-inactive', isAuthenticated, isAdmin, deleteInactiveUsers
 app.post('/users/:id/delete', isAuthenticated, isAdmin, deleteUser); 
 
 // Rutas de carrito
+app.use('/cart', isAuthenticated, cartRoutes);
 app.get('/', isAuthenticated, getCart);
 app.post('/add', isAuthenticated, addToCart);
 app.post('/remove/:productId', isAuthenticated, removeFromCart);

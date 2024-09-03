@@ -1,20 +1,124 @@
-<header>
-    <nav>
-        <ul>
-            <li><a href="/">Inicio</a></li>
-            <li><a href="/products">Productos</a></li>
-            {{#if user}}
-                <li><a href="/profile">Perfil</a></li>
-                <li><a href="/cart">Carrito</a></li>
+<nav>
+    <ul>
+        <li><a href="/">Inicio</a></li>
+        <li><a href="/products">Productos</a></li>
+
+        {{#if user}}
+            <li>Bienvenido, {{user.name}}</li> <!-- Mostrar nombre del usuario -->
+            {{#ifEquals user.role "user"}}
+                <li><a href="/checkout">Checkout</a></li>
+            {{/ifEquals}}
+            {{#ifEquals user.role "premium"}}
+                <li><a href="/checkout">Checkout</a></li>
                 <li><a href="/dashboard">Dashboard</a></li>
-                <li><a href="/logout">Cerrar Sesión</a></li>
-            {{else}}
-                <li><a href="/login">Iniciar Sesión</a></li>
-                <li><a href="/register">Registrarse</a></li>
-            {{/if}}
-        </ul>
-    </nav>
-    {{#if user}}
-        <p>Bienvenido, {{this.name}}!</p>
-    {{/if}}
+            {{/ifEquals}}
+            {{#ifEquals user.role "admin"}}
+                <li><a href="/checkout">Checkout</a></li>
+                <li><a href="/dashboard">Dashboard</a></li>
+            {{/ifEquals}}
+            <li><a href="/logout">Cerrar Sesión</a></li>
+        {{else}}
+            <li><a href="/login">Iniciar Sesión</a></li>
+            <li><a href="/register">Registrarse</a></li>
+        {{/if}}
+
+        <!-- Carrito desplegable -->
+        <li id="cart-container">
+            <button id="cart-button">Carrito (<span id="cart-count">0</span>)</button>
+            <div id="cart-dropdown" class="cart-dropdown">
+                <h2>Tu Carrito</h2>
+                <ul id="cart-items"></ul>
+                <h3>Total: $<span id="cart-total">0</span></h3>
+                <button id="checkout-button" class="btn">Comprar</button>
+            </div>
+        </li>
+    </ul>
+</nav>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const cartButton = document.getElementById('cart-button');
+        const cartDropdown = document.getElementById('cart-dropdown');
+        const cartCount = document.getElementById('cart-count');
+        const cartItems = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        const updateCartDisplay = () => {
+            cartCount.textContent = cart.length;
+            cartItems.innerHTML = '';
+            let total = 0;
+            cart.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = `${item.name} x${item.quantity} - $${item.price}`;
+                cartItems.appendChild(li);
+                total += item.quantity * item.price;
+            });
+            cartTotal.textContent = total.toFixed(2);
+        };
+
+        cartButton.addEventListener('click', () => {
+            cartDropdown.classList.toggle('open');
+        });
+
+        document.getElementById('checkout-button').addEventListener('click', () => {
+            window.location.href = '/checkout';
+        });
+
+        updateCartDisplay();
+    });
+</script>
+
+<!-- Estilos para el carrito -->
+<style>
+    .cart-dropdown {
+        position: absolute;
+        right: 0;
+        top: 100%;
+        width: 300px;
+        background: white;
+        border: 1px solid #ddd;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        display: none;
+    }
+
+    .cart-dropdown.open {
+        display: block;
+    }
+
+    .cart-dropdown h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+
+    .cart-dropdown ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .cart-dropdown ul li {
+        margin-bottom: 10px;
+    }
+
+    .cart-dropdown h3 {
+        font-size: 1rem;
+        margin-top: 20px;
+    }
+
+    #checkout-button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px;
+        width: 100%;
+        cursor: pointer;
+        font-size: 1rem;
+        border-radius: 5px;
+    }
+</style>
 </header>

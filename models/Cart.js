@@ -12,6 +12,12 @@ const cartSchema = new mongoose.Schema({
     updatedAt: { type: Date, default: Date.now },
 });
 
+// Middleware para calcular el total antes de guardar el carrito
+cartSchema.pre('save', async function(next) {
+    this.total = this.products.reduce((acc, item) => acc + item.quantity * item.product.price, 0);
+    next();
+});
+
 const Cart = mongoose.model('Cart', cartSchema);
 
 export default Cart;

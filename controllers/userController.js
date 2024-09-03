@@ -1,6 +1,14 @@
 import User from '../models/User.js';
 import nodemailer from 'nodemailer';
 
+// Configuración del transporte de nodemailer
+const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 
 // Obtener todos los usuarios
 export const getUsers = async (req, res) => {
@@ -20,7 +28,7 @@ export const deleteInactiveUsers = async (req, res) => {
 
         for (const user of inactiveUsers) {
             await user.remove();
-            sendDeletionEmail(user.email);
+            await sendDeletionEmail(user.email, user.name);
         }
 
         res.json({ message: 'Usuarios inactivos eliminados' });
@@ -43,6 +51,7 @@ export const updateUserRole = async (req, res) => {
     }
 };
 
+// Eliminar un usuario
 export const deleteUser = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
@@ -50,15 +59,8 @@ export const deleteUser = async (req, res) => {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        // Utilizar deleteOne para mayor consistencia
         await User.deleteOne({ _id: req.params.id });
-
-        // Verificar si la función sendDeletionEmail existe y funciona correctamente
-        if (typeof sendDeletionEmail === 'function') {
-            sendDeletionEmail(user.email);
-        } else {
-            console.warn('sendDeletionEmail no está definida o no es una función');
-        }
+        await sendDeletionEmail(user.email, user.name);
 
         res.redirect('/dashboard'); 
     } catch (err) {
@@ -67,26 +69,19 @@ export const deleteUser = async (req, res) => {
     }
 };
 
-
 // Función para enviar email de eliminación
-const sendDeletionEmail = (email) => {
-    const transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
-
+const sendDeletionEmail = async (email, name) => {
     const mailOptions = {
         from: 'no-reply@ecommerce.com',
         to: email,
         subject: 'Cuenta eliminada por inactividad',
-        text: 'Tu cuenta ha sido eliminada por inactividad.',
+        text: `Hola ${name}, tu cuenta ha sido eliminada por inactividad.`,
     };
 
-    transporter.sendMail(mailOptions, (err, info) => {
-        if (err) console.error(err.message);
-        else console.log('Correo enviado: ' + info.response);
-    });
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Correo enviado: ' + email);
+    } catch (err) {
+        console.error('Error al enviar el correo:', err);
+    }
 };

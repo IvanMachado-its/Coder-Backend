@@ -8,16 +8,56 @@
 </head>
 <body>
     <main class="container">
-     {{#each products}}
-    <div class="product-card">
-        <h3>{{this.name}}</h3>
-        <p>{{this.description}}</p>
-        <p>Precio: ${{this.price}}</p>
-        <a href="/cart/add/{{this._id}}" class="btn">Añadir al Carrito</a>
-    </div>
-    {{/each}}
+        <div id="notification" style="display:none;">Producto agregado al carrito</div> <!-- Contenedor de notificación -->
+        <div class="products">
+            {{#each products}}
+            <div class="product-card">
+                <h3>{{this.name}}</h3>
+                <p>{{this.description}}</p>
+                <p>Precio: ${{this.price}}</p>
+                <form class="add-to-cart-form">
+                    <input type="hidden" name="productId" value="{{this._id}}">
+                    <label for="quantity">Cantidad:</label>
+                    <input type="number" name="quantity" value="1" min="1">
+                    <button type="submit" class="btn">Añadir al Carrito</button>
+                </form>
+            </div>
+            {{/each}}
+        </div>
     </main>
 
+    <script>
+        document.querySelectorAll('.add-to-cart-form').forEach(form => {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();  // Prevenir el comportamiento por defecto del formulario
 
+                const formData = new FormData(form);
+                const data = {
+                    productId: formData.get('productId'),
+                    quantity: formData.get('quantity')
+                };
+
+                const response = await fetch('/cart/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                if (response.ok) {
+                    const notification = document.getElementById('notification');
+                    notification.style.display = 'block';
+                    notification.textContent = 'Producto agregado al carrito';
+
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                    }, 3000);
+                } else {
+                    console.error('Error al agregar al carrito');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
