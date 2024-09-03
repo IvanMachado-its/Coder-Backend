@@ -4,7 +4,7 @@ import User from '../models/User.js';
 export const isAuthenticated = async (req, res, next) => {
     const token = req.session.token;
     if (!token) {
-        return res.redirect('/login');
+        return res.redirect('/dashboard');
     }
 
     try {
