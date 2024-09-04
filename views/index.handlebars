@@ -8,28 +8,24 @@
 </head>
 <body>
 
-    <main class="container">
-        <h1>Bienvenido a la Tienda Online</h1>
-        <h2>Productos Destacados</h2>
-        <div id="notification" style="display:none;">Producto agregado al carrito</div>
-        <div class="products">
-            {{#each products}}
-            <div class="product-card">
-                <h3>{{this.name}}</h3>
-                <p>{{this.description}}</p>
-                <p>Precio: ${{this.price}}</p>
-<!-- Parte de la vista de productos -->
-<form class="add-to-cart-form" method="POST" action="/cart/add">
-    <input type="hidden" name="productId" value="{{this._id}}">
-    <label for="quantity">Cantidad:</label>
-    <input type="number" name="quantity" value="1" min="1">
-    <button type="submit" class="btn">Añadir al Carrito</button>
-</form>
-
-            </div>
-            {{/each}}
+   <main class="container">
+    <h1 class="main-title">Productos Destacados</h1>
+    <div class="products-grid">
+        {{#each products}}
+        <div class="product-card">
+            <h3>{{this.name}}</h3>
+            <p>{{this.description}}</p>
+            <p class="price">Precio: ${{this.price}}</p>
+            <form class="add-to-cart-form" method="POST" action="/cart/add">
+                <input type="hidden" name="productId" value="{{this._id}}">
+                <label for="quantity">Cantidad:</label>
+                <input type="number" name="quantity" value="1" min="1" class="quantity-input">
+                <button type="submit" class="btn">Añadir al Carrito</button>
+            </form>
         </div>
-    </main>
+        {{/each}}
+    </div>
+</main>
 
     <script>
         document.querySelectorAll('.add-to-cart-form').forEach(form => {
