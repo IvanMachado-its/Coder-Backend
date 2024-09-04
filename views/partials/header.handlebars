@@ -2,18 +2,16 @@
     <ul>
         <li><a href="/">Inicio</a></li>
         <li><a href="/products">Productos</a></li>
+          <li><a href="/cart">Ver Carrito 🛒<span id="cart-count">0</span></a></li>
 
         {{#if user}}
             <li>Bienvenido, {{user.name}}</li> <!-- Mostrar nombre del usuario -->
             {{#ifEquals user.role "user"}}
-                <li><a href="/checkout">Checkout</a></li>
             {{/ifEquals}}
             {{#ifEquals user.role "premium"}}
-                <li><a href="/checkout">Checkout</a></li>
                 <li><a href="/dashboard">Dashboard</a></li>
             {{/ifEquals}}
             {{#ifEquals user.role "admin"}}
-                <li><a href="/checkout">Checkout</a></li>
                 <li><a href="/dashboard">Dashboard</a></li>
             {{/ifEquals}}
             <li><a href="/logout">Cerrar Sesión</a></li>

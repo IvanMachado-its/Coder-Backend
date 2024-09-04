@@ -3,15 +3,6 @@ import Product from '../models/Product.js';
 import User from '../models/User.js';
 import nodemailer from 'nodemailer';
 
-// Configuración del transporte de nodemailer
-const transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
-
 // Controlador genérico para renderizar productos en cualquier vista
 export const renderProducts = async (req, res, next, viewName, title, productId = null) => {
     try {
@@ -77,8 +68,16 @@ export const updateProduct = async (req, res) => {
         res.status(500).render('error', { message: 'Error al actualizar el producto' });
     }
 };
+// Configuración de transporte de Nodemailer
+const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 
-// Eliminar un producto y notificar a un usuario premium
+// Controlador para eliminar un producto y notificar a un usuario premium
 export const deleteProduct = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
@@ -86,12 +85,16 @@ export const deleteProduct = async (req, res) => {
             return res.status(404).render('error', { message: 'Producto no encontrado' });
         }
 
+        // Encontrar el usuario propietario del producto
         const user = await User.findById(product.user);
         if (user && user.role === 'premium') {
+            // Enviar correo al usuario premium notificando que su producto fue eliminado
             await sendProductDeletionEmail(user.email, user.name, product.name);
         }
 
+        // Eliminar el producto de la base de datos
         await Product.findByIdAndDelete(req.params.id);
+
         res.redirect('/dashboard');
     } catch (err) {
         console.error('Error al eliminar el producto:', err);
@@ -99,18 +102,18 @@ export const deleteProduct = async (req, res) => {
     }
 };
 
-// Función para enviar email de eliminación de producto
+// Función para enviar el correo de notificación
 const sendProductDeletionEmail = async (email, name, productName) => {
     const mailOptions = {
         from: 'no-reply@ecommerce.com',
         to: email,
         subject: 'Producto Eliminado',
-        text: `Hola ${name}, tu producto "${productName}" ha sido eliminado.`,
+        text: `Hola ${name}, tu producto "${productName}" ha sido eliminado de nuestra tienda.`,
     };
 
     try {
         await transporter.sendMail(mailOptions);
-        console.log('Correo enviado: ' + email);
+        console.log('Correo enviado a:', email);
     } catch (err) {
         console.error('Error al enviar el correo:', err);
     }

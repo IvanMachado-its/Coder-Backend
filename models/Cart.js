@@ -21,12 +21,12 @@ const cartSchema = new mongoose.Schema({
     }],
     totalPrice: {
         type: Number,
-        required: true,
-        default: 0,
+        default: 0,  // Asegúrate de que totalPrice esté inicializado como 0
     }
 }, {
     timestamps: true
 });
 
 const Cart = mongoose.model('Cart', cartSchema);
+
 export default Cart;

@@ -37,20 +37,25 @@ export const loginUser = async (req, res) => {
             return res.status(401).render('login', { message: 'Credenciales incorrectas' });
         }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        // Generar token con el ID y el Rol del usuario
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
+        // Guardar el token en una cookie
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 15 * 60 * 1000, // 15 minutos
+            maxAge: 24 * 60 * 60 * 1000,  // 1 día
             sameSite: 'strict',
         });
 
+        // Redirigir al dashboard
         res.redirect('/dashboard');
     } catch (error) {
+        console.error('Error en el proceso de login:', error);
         res.status(500).render('login', { message: 'Error al iniciar sesión' });
     }
 };
+
 
 export const logoutUser = (req, res) => {
     req.session.destroy((err) => {

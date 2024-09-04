@@ -3,24 +3,28 @@ import User from '../models/User.js';       // Importación del modelo User
 
 export const renderDashboard = async (req, res) => {
     try {
-        // Convertir el usuario a un objeto si es necesario
-        const user = req.user.toObject ? req.user.toObject() : req.user;
-
-        // Obtener productos que pertenecen al usuario autenticado
-        const products = await Product.find().lean();
+        const user = req.user;
+        let products = [];
         let users = [];
 
-        // Si el usuario es admin, cargar todos los usuarios
+        // Si el usuario es admin, obtiene todos los productos y usuarios
         if (user.role === 'admin') {
-            users = await User.find().lean();
+            products = await Product.find().lean(); // Admin puede ver todos los productos
+            users = await User.find().lean(); // Admin puede ver todos los usuarios
+            console.log(`Administrador: ${user.name} viendo todos los productos.`);
+        } 
+        // Si el usuario es premium, solo obtiene sus propios productos
+        else if (user.role === 'premium') {
+            products = await Product.find({ user: user._id }).lean(); // Premium solo ve sus productos
+            console.log(`Usuario premium: ${user.name} viendo sus productos.`);
         }
 
-        // Renderizar la vista del dashboard, pasando los productos y usuarios (solo para admin)
+        // Renderizar el dashboard con los productos y, si es admin, también con los usuarios
         res.render('dashboard', {
             title: 'Panel de Control',
-            user, 
+            user,
             products,
-            users
+            users, // Solo se llena para admin
         });
     } catch (err) {
         console.error('Error al cargar el panel de control:', err);

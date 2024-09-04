@@ -50,20 +50,31 @@ export const getCart = async (req, res) => {
     }
 };
 
-
 // Eliminar producto del carrito
 export const removeFromCart = async (req, res) => {
     try {
         const { productId } = req.body;  // Obtener el ID del producto desde el formulario
-        const cart = await Cart.findOne({ user: req.user._id });
+        const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');  // Asegúrate de popular el producto
 
         if (!cart) return res.status(404).json({ message: 'Carrito no encontrado' });
 
         // Filtrar los items para eliminar el producto
-        cart.items = cart.items.filter(item => !item.product.equals(productId));
+        cart.items = cart.items.filter(item => !item.product._id.equals(productId));
 
-        // Recalcular el precio total
-        cart.totalPrice = cart.items.reduce((total, item) => total + item.product.price * item.quantity, 0);
+        // Verifica si el precio del producto es válido
+        const isValidPrice = item => item.product && item.product.price && !isNaN(item.product.price);
+
+        // Recalcular el precio total con verificación de precios válidos
+        if (cart.items.length > 0) {
+            cart.totalPrice = cart.items.reduce((total, item) => {
+                if (isValidPrice(item)) {
+                    return total + item.product.price * item.quantity;
+                }
+                return total; 
+            }, 0);
+        } else {
+            cart.totalPrice = 0;  
+        }
 
         await cart.save();
 
