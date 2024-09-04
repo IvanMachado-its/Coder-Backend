@@ -7,20 +7,23 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+    
     <main class="container">
-        <div id="notification" style="display:none;">Producto agregado al carrito</div> <!-- Contenedor de notificación -->
+       <div id="notification" style="display:none;">Producto agregado al carrito</div>
         <div class="products">
             {{#each products}}
             <div class="product-card">
                 <h3>{{this.name}}</h3>
                 <p>{{this.description}}</p>
                 <p>Precio: ${{this.price}}</p>
-                <form class="add-to-cart-form">
-                    <input type="hidden" name="productId" value="{{this._id}}">
-                    <label for="quantity">Cantidad:</label>
-                    <input type="number" name="quantity" value="1" min="1">
-                    <button type="submit" class="btn">Añadir al Carrito</button>
-                </form>
+                <!-- Parte de la vista de productos -->
+<form class="add-to-cart-form" method="POST" action="/cart/add">
+    <input type="hidden" name="productId" value="{{this._id}}">
+    <label for="quantity">Cantidad:</label>
+    <input type="number" name="quantity" value="1" min="1">
+    <button type="submit" class="btn">Añadir al Carrito</button>
+</form>
+
             </div>
             {{/each}}
         </div>

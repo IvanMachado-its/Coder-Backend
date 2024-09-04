@@ -5,8 +5,8 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import productRoutes from './routes/productRoutes.js';
-import cartRoutes from './routes/cartRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import cartRoutes from './routes/cartRoutes.js';
 import MongoStore from 'connect-mongo';
 import { create } from 'express-handlebars';
 import dotenv from 'dotenv';
@@ -18,7 +18,6 @@ import { isAuthenticated, isAdmin } from './middlewares/authMiddleware.js';
 import { getUsers, updateUserRole, deleteUser, deleteInactiveUsers } from './controllers/userController.js';
 import { registerUser, loginUser, logoutUser } from './controllers/authController.js';
 import { renderProducts, deleteProduct, updateProduct } from './controllers/productController.js';
-import { getCart, addToCart, removeFromCart, checkout } from './controllers/cartController.js';
 
 dotenv.config(); // Cargar variables de entorno desde .env
 
@@ -49,20 +48,27 @@ app.use(session({
     },
 }));
 
-// Configurar express-handlebars como motor de vistas
+
 const hbs = create({
     extname: '.handlebars',
     partialsDir: './views/partials',
     helpers: {
+        // Helper existente para comparar valores
         ifEquals: function(arg1, arg2, options) {
             return (arg1 == arg2) ? options.fn(this) : options.inverse(this);
+        },
+        // Nuevo helper para multiplicar valores
+        multiply: function(a, b) {
+            return a * b;
         }
     },
+    
     runtimeOptions: {
         allowProtoPropertiesByDefault: true,
         allowProtoMethodsByDefault: true,
     }
 });
+
 
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
@@ -120,18 +126,13 @@ app.post('/users/:id/role', isAuthenticated, isAdmin, updateUserRole);
 app.post('/users/delete-inactive', isAuthenticated, isAdmin, deleteInactiveUsers); 
 app.post('/users/:id/delete', isAuthenticated, isAdmin, deleteUser); 
 
-// Rutas de carrito
-app.use('/cart', isAuthenticated, cartRoutes);
-app.get('/', isAuthenticated, getCart);
-app.post('/add', isAuthenticated, addToCart);
-app.post('/remove/:productId', isAuthenticated, removeFromCart);
-app.post('/checkout', isAuthenticated, checkout);
 
 // Rutas de API
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/cart', cartRoutes);
+app.use('/cart', cartRoutes);
+
 
 // Puerto y arranque del servidor
 const PORT = process.env.PORT || 8080;
