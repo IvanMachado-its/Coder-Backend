@@ -50,35 +50,57 @@ export const getCart = async (req, res) => {
     }
 };
 
-// Procesar pago con Stripe
+
+// Eliminar producto del carrito
+export const removeFromCart = async (req, res) => {
+    try {
+        const { productId } = req.body;  // Obtener el ID del producto desde el formulario
+        const cart = await Cart.findOne({ user: req.user._id });
+
+        if (!cart) return res.status(404).json({ message: 'Carrito no encontrado' });
+
+        // Filtrar los items para eliminar el producto
+        cart.items = cart.items.filter(item => !item.product.equals(productId));
+
+        // Recalcular el precio total
+        cart.totalPrice = cart.items.reduce((total, item) => total + item.product.price * item.quantity, 0);
+
+        await cart.save();
+
+        res.redirect('/cart');  // Redirige al carrito nuevamente
+    } catch (err) {
+        console.error('Error al eliminar producto del carrito:', err);
+        res.status(500).json({ message: 'Error al eliminar producto del carrito' });
+    }
+};
+
 export const checkout = async (req, res) => {
     try {
         const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
-        if (!cart) return res.status(400).render('error', { message: 'No hay productos en el carrito' });
+        if (!cart) return res.status(400).json({ message: 'No hay productos en el carrito' });
 
         // Crear sesión de pago en Stripe
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            mode: 'payment',
-            customer_email: req.user.email,
             line_items: cart.items.map(item => ({
                 price_data: {
                     currency: 'usd',
                     product_data: {
                         name: item.product.name,
-                        description: item.product.description,
                     },
                     unit_amount: Math.round(item.product.price * 100), // en centavos
                 },
                 quantity: item.quantity,
             })),
-            success_url: `${req.protocol}://${req.get('host')}/checkout/success`,
+            mode: 'payment',
+            success_url: `${req.protocol}://${req.get('host')}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.protocol}://${req.get('host')}/checkout/cancel`,
         });
 
-        res.redirect(session.url);
+        // Redirigir a la URL de Stripe Checkout
+        res.redirect(303, session.url);
     } catch (err) {
         console.error('Error en el proceso de pago:', err);
-        res.status(500).render('error', { message: 'Error en el proceso de pago' });
+        res.status(500).json({ message: 'Error en el proceso de pago' });
     }
 };

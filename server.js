@@ -125,6 +125,9 @@ app.get('/users', isAuthenticated, isAdmin, getUsers);
 app.post('/users/:id/role', isAuthenticated, isAdmin, updateUserRole); 
 app.post('/users/delete-inactive', isAuthenticated, isAdmin, deleteInactiveUsers); 
 app.post('/users/:id/delete', isAuthenticated, isAdmin, deleteUser); 
+// Rutas de Gestión de Carrito
+app.get('/checkout/success', (req, res) => res.render('success', { title: 'Pago Completado' }));
+app.get('/checkout/cancel', (req, res) => res.render('cancel', { title: 'Pago Cancelado' }));
 
 
 // Rutas de API

@@ -1,5 +1,6 @@
 <!-- views/cart.handlebars -->
 <h1>Carrito de Compras</h1>
+
 {{#if items.length}}
     <table>
         <thead>
@@ -8,6 +9,7 @@
                 <th>Cantidad</th>
                 <th>Precio</th>
                 <th>Total</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -17,15 +19,27 @@
                 <td>{{this.quantity}}</td>
                 <td>${{this.product.price}}</td>
                 <td>${{multiply this.product.price this.quantity}}</td>
+                <td>
+                    <!-- Botón para quitar producto -->
+                    <form action="/cart/remove" method="POST">
+                        <input type="hidden" name="productId" value="{{this.product._id}}">
+                        <button type="submit" class="btn">Quitar</button>
+                    </form>
+                </td>
             </tr>
             {{/each}}
         </tbody>
     </table>
+
     <h2>Total: ${{totalPrice}}</h2>
-    <form action="/cart/checkout" method="POST">
-        <button type="submit" class="btn">Proceder al Pago</button>
-    </form>
+
+    <!-- Stripe Buy Button -->
+    <script async src="https://js.stripe.com/v3/buy-button.js"></script>
+    <stripe-buy-button
+      buy-button-id="buy_btn_1PvIklRtXWRar3GqmlmcCgB5"
+      publishable-key="pk_test_51PtY51RtXWRar3GqmX6qY8m48EkyZLdXkBnEMeELPPTtDPvnsUryCKjTlwANTz40n9ITtCJwp1HeuW56oXMKEdkl005t3kgPKO">
+    </stripe-buy-button>
+
 {{else}}
     <p>No tienes productos en tu carrito.</p>
 {{/if}}
-
