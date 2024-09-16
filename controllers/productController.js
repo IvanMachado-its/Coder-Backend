@@ -1,7 +1,9 @@
-// controllers/productController.js
 import Product from '../models/Product.js';
 import User from '../models/User.js';
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
+
+// Configuración de SendGrid
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Controlador genérico para renderizar productos en cualquier vista
 export const renderProducts = async (req, res, next, viewName, title, productId = null) => {
@@ -68,14 +70,6 @@ export const updateProduct = async (req, res) => {
         res.status(500).render('error', { message: 'Error al actualizar el producto' });
     }
 };
-// Configuración de transporte de Nodemailer
-const transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
 
 // Controlador para eliminar un producto y notificar a un usuario premium
 export const deleteProduct = async (req, res) => {
@@ -102,17 +96,18 @@ export const deleteProduct = async (req, res) => {
     }
 };
 
-// Función para enviar el correo de notificación
+// Función para enviar el correo de notificación usando SendGrid
 const sendProductDeletionEmail = async (email, name, productName) => {
-    const mailOptions = {
-        from: 'no-reply@ecommerce.com',
+    const msg = {
         to: email,
+        from: 'ivanmachado146@gmail.com', 
         subject: 'Producto Eliminado',
         text: `Hola ${name}, tu producto "${productName}" ha sido eliminado de nuestra tienda.`,
+        html: `<strong>Hola ${name}</strong>, tu producto "${productName}" ha sido eliminado de nuestra tienda.`,
     };
 
     try {
-        await transporter.sendMail(mailOptions);
+        await sgMail.send(msg);
         console.log('Correo enviado a:', email);
     } catch (err) {
         console.error('Error al enviar el correo:', err);

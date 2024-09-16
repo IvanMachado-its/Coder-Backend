@@ -1,14 +1,8 @@
 import User from '../models/User.js';
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
-// Configuración del transporte de nodemailer
-const transporter = nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+// Configuración de SendGrid
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Obtener todos los usuarios
 export const getUsers = async (req, res) => {
@@ -69,17 +63,18 @@ export const deleteUser = async (req, res) => {
     }
 };
 
-// Función para enviar email de eliminación
+// Función para enviar email de eliminación con SendGrid
 const sendDeletionEmail = async (email, name) => {
-    const mailOptions = {
-        from: 'no-reply@ecommerce.com',
+    const msg = {
         to: email,
+        from: 'ivanmachado146@gmail.com', 
         subject: 'Cuenta eliminada por inactividad',
         text: `Hola ${name}, tu cuenta ha sido eliminada por inactividad.`,
+        html: `<strong>Hola ${name}</strong>, tu cuenta ha sido eliminada por inactividad.`,
     };
 
     try {
-        await transporter.sendMail(mailOptions);
+        await sgMail.send(msg);
         console.log('Correo enviado: ' + email);
     } catch (err) {
         console.error('Error al enviar el correo:', err);
