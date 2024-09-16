@@ -87,12 +87,13 @@ export const removeFromCart = async (req, res) => {
 };
 
 // Método de checkout y envío de recibo
+// Método de checkout y redirección a Stripe
 export const checkout = async (req, res) => {
     try {
         const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
         if (!cart || cart.items.length === 0) return res.status(400).json({ message: 'No hay productos en el carrito' });
 
-        // Crear sesión de pago en Stripe
+        // Crear la sesión de pago con Stripe
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: cart.items.map(item => ({
@@ -101,7 +102,7 @@ export const checkout = async (req, res) => {
                     product_data: {
                         name: item.product.name,
                     },
-                    unit_amount: Math.round(item.product.price * 100), // en centavos
+                    unit_amount: Math.round(item.product.price * 100), // Stripe requiere centavos
                 },
                 quantity: item.quantity,
             })),
@@ -110,21 +111,21 @@ export const checkout = async (req, res) => {
             cancel_url: `${req.protocol}://${req.get('host')}/checkout/cancel`,
         });
 
-        // Redirigir a la URL de Stripe Checkout
-        res.redirect(303, session.url);
+        // Devolver la URL de la sesión de pago
+        res.status(200).json({ url: session.url });
     } catch (err) {
         console.error('Error en el proceso de pago:', err);
         res.status(500).json({ message: 'Error en el proceso de pago' });
     }
 };
-
-// Función para manejar el éxito del pago y envío del ticket
 export const checkoutSuccess = async (req, res) => {
     try {
         const { session_id } = req.query;
-        const session = await stripe.checkout.sessions.retrieve(session_id);
-        const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
 
+        // Obtener la sesión de Stripe para verificar el pago
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+
+        const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
         if (!session || !cart) {
             return res.status(400).render('error', { message: 'Error al recuperar la sesión de pago o carrito vacío.' });
         }
@@ -143,6 +144,7 @@ export const checkoutSuccess = async (req, res) => {
         res.status(500).render('error', { message: 'Error al procesar el éxito del pago' });
     }
 };
+
 
 // Función para enviar el recibo por email usando SendGrid
 const sendReceiptEmail = async (email, name, items, totalPrice) => {
