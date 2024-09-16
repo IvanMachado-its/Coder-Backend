@@ -106,6 +106,29 @@ app.use(async (req, res, next) => {
     next();
 });
 
+app.post('/create-checkout-session', async (req, res) => {
+    try {
+      const session = await stripe.checkout.sessions.create({
+        ui_mode: 'embedded',
+        line_items: [
+          {
+            price: 'pr_1234567890abcdef',
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        return_url: `${YOUR_DOMAIN}/return.html?session_id={CHECKOUT_SESSION_ID}`,
+      });
+  
+      res.send({ clientSecret: session.client_secret });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      res.status(500).send({ error: "Failed to create checkout session" });
+    }
+  });
+  
+  
+
 // Definición de las rutas para las vistas
 app.get('/', (req, res, next) => renderProducts(req, res, next, 'index', 'Tienda Online'));
 app.get('/products', (req, res, next) => renderProducts(req, res, next, 'products', 'Productos'));
