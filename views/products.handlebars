@@ -8,8 +8,9 @@
 </head>
 <body>
     
-    <main class="container">
-      <div class="products-grid">
+<main class="container">
+    <h1 class="main-title">Productos</h1>
+    <div class="products-grid">
         {{#each products}}
         <div class="product-card">
             <h3>{{this.name}}</h3>
@@ -19,12 +20,15 @@
                 <input type="hidden" name="productId" value="{{this._id}}">
                 <label for="quantity">Cantidad:</label>
                 <input type="number" name="quantity" value="1" min="1" class="quantity-input">
-                <button type="submit" class="btn">Añadir al Carrito</button>
+                <button type="submit" class="btn primary-btn">Añadir al Carrito</button>
             </form>
         </div>
         {{/each}}
     </div>
 </main>
+
+<div id="notification" class="notification"></div>
+
 
     <script>
         document.querySelectorAll('.add-to-cart-form').forEach(form => {
