@@ -39,28 +39,33 @@
             </form>
         </section>
 
-        <section class="product-management-section">
+       <section class="product-management-section">
             <h2 class="section-title">Gestión de Productos</h2>
             <div class="products-grid">
                 {{#each products}}
                 <div class="product-card" id="product-{{this._id}}">
                     <form action="/products/{{this._id}}/update?_method=PUT" method="POST" class="product-form" id="form-{{this._id}}">
                         <input type="hidden" name="_method" value="PUT">
+
                         <h3>
                             <input type="text" name="name" value="{{this.name}}" id="name-{{this._id}}" readonly>
                         </h3>
+
                         <p>
                             <textarea name="description" id="description-{{this._id}}" readonly>{{this.description}}</textarea>
                         </p>
-                        <p class="price">
+
+                        <p>
                             <strong>Precio:</strong>
                             <input type="number" name="price" value="{{this.price}}" id="price-{{this._id}}" readonly>
                         </p>
+
                         <div class="product-actions">
                             <button type="button" class="btn secondary-btn" onclick="enableEditing('{{this._id}}')">Editar</button>
                             <button type="submit" class="btn primary-btn save-btn" id="save-btn-{{this._id}}" style="display:none;">Guardar</button>
                         </div>
                     </form>
+
                     <form action="/products/{{this._id}}/delete" method="POST" style="display:inline;">
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit" class="btn danger-btn">Eliminar</button>
@@ -99,6 +104,8 @@
             </ul>
         </section>
         {{/ifEquals}}
+
+
 
 <script>
            function enableEditing(productId) {
