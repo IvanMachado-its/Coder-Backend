@@ -66,12 +66,14 @@ export const updateProduct = async (req, res) => {
 
         await product.save();
 
-        res.redirect('/dashboard');  
+        res.redirect('/dashboard');  // Volver al dashboard tras la edición
     } catch (err) {
         console.error('Error al actualizar el producto:', err);
         res.status(500).render('error', { message: 'Error al actualizar el producto' });
     }
 };
+
+
 
 // Controlador para eliminar un producto y notificar a un usuario premium
 export const deleteProduct = async (req, res) => {

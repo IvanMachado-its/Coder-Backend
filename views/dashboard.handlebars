@@ -39,8 +39,7 @@
             </form>
         </section>
 
-        <!-- products.handlebars -->
-<section class="product-management-section">
+       <section class="product-management-section">
     <h2 class="section-title">Gestión de Productos</h2>
     <div class="products-grid">
         {{#each products}}
@@ -68,16 +67,19 @@
                 <div class="product-actions">
                     <button type="button" class="btn secondary-btn" onclick="enableEditing('{{this._id}}')">Editar</button>
                     <button type="submit" class="btn primary-btn" style="display:none;" id="save-btn-{{this._id}}">Guardar</button>
-                    <form action="/products/{{this._id}}/delete" method="POST" style="display:inline;">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="btn danger-btn">Eliminar</button>
-                    </form>
                 </div>
+            </form>
+
+            <!-- Formulario separado para eliminar producto -->
+            <form action="/products/{{this._id}}/delete" method="POST" style="display:inline;">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn danger-btn">Eliminar</button>
             </form>
         </div>
         {{/each}}
     </div>
 </section>
+
 
         {{#ifEquals user.role "admin"}}
         <section class="user-management-section">
@@ -110,13 +112,43 @@
         {{/ifEquals}}
 
         <script>
-    // Función para habilitar la edición de los campos
+
     function enableEditing(productId) {
+        // Habilitar campos editables
         document.getElementById(`name-${productId}`).removeAttribute('readonly');
         document.getElementById(`description-${productId}`).removeAttribute('readonly');
         document.getElementById(`price-${productId}`).removeAttribute('readonly');
+        
+        // Mostrar botón de guardar
         document.getElementById(`save-btn-${productId}`).style.display = 'inline-block';
     }
+
+// Función para guardar los cambios
+function saveChanges() {
+    const inputs = document.querySelectorAll('.form-group input, .form-group select, .form-group textarea');
+    const data = {};
+
+    inputs.forEach(input => {
+        const name = input.name;
+        const value = input.value;
+        data[name] = value;
+    });
+
+    // Aquí podrías hacer una petición AJAX o fetch para enviar los datos al backend
+    console.log('Datos guardados:', data);
+
+    // Simulación de que los datos se han guardado y deshabilitar edición
+    inputs.forEach(input => {
+        input.setAttribute('readonly', 'true');
+        input.style.border = 'none'; // Quitar el borde de los inputs después de guardar
+    });
+
+    document.getElementById('save-btn').style.display = 'none'; // Ocultar botón de guardar
+}
+
+// Agregar el evento de clic al botón de guardar
+document.getElementById('save-btn').addEventListener('click', saveChanges);
+
 </script>
     </main>
 </body>
