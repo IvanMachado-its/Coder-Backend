@@ -137,6 +137,8 @@ app.get('/login', (req, res) => res.render('login', { title: 'Iniciar Sesión' }
 app.get('/register', (req, res) => res.render('register', { title: 'Registro' }));
 app.get('/logout', logoutUser);
 
+app.use('/products', productRoutes);
+
 // Integrar las rutas del dashboard
 app.use('/dashboard', isAuthenticated, dashboardRoutes);
 app.use('/products', productRoutes);

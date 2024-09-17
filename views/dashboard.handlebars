@@ -44,7 +44,7 @@
     <div class="products-grid">
         {{#each products}}
         <div class="product-card" id="product-{{this._id}}">
-            <form action="/products/{{this._id}}" method="POST" class="product-form" id="form-{{this._id}}">
+            <form action="/products/{{this._id}}/update?_method=PUT" method="POST" class="product-form" id="form-{{this._id}}">
                 <input type="hidden" name="_method" value="PUT">
 
                 <!-- Nombre editable -->

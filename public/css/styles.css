@@ -32,6 +32,7 @@ p, label, a {
 }
 
 
+
 /* Asegurar que los inputs y textareas no se expandan más allá de su contenedor */
 .product-form input[type="text"],
 .product-form input[type="number"],
