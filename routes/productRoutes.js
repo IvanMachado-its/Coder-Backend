@@ -12,7 +12,7 @@ router.get('/', (req, res, next) => renderProducts(req, res, next, 'products', '
 router.post('/', isAuthenticated, isAdminOrPremium, createProduct);
 
 // Actualizar producto (PUT)
-router.put('/:id/update', isAuthenticated, isAdmin, updateProduct)
+router.put('/:id/update', isAuthenticated, isAdminOrPremium, updateProduct)
 
 // Eliminar un producto (admin o premium)
 router.delete('/:id', isAuthenticated, isAdminOrPremium, deleteProduct);
