@@ -39,12 +39,12 @@
             </form>
         </section>
 
-       <section class="product-management-section">
+        <section class="product-management-section">
             <h2 class="section-title">Gestión de Productos</h2>
-            <div class="products-grid">
+            <div class="dashboard-grid">
                 {{#each products}}
-                <div class="product-card" id="product-{{this._id}}">
-                    <form action="/products/{{this._id}}/update?_method=PUT" method="POST" class="product-form" id="form-{{this._id}}">
+                <div class="dashboard-card" id="product-{{this._id}}">
+                    <form action="/products/{{this._id}}/update?_method=PUT" method="POST" class="dashboard-form" id="form-{{this._id}}">
                         <input type="hidden" name="_method" value="PUT">
 
                         <h3>
@@ -105,55 +105,47 @@
         </section>
         {{/ifEquals}}
 
-
-
-<script>
-           function enableEditing(productId) {
+        <script>
+            function enableEditing(productId) {
                 document.getElementById(`name-${productId}`).removeAttribute('readonly');
                 document.getElementById(`description-${productId}`).removeAttribute('readonly');
                 document.getElementById(`price-${productId}`).removeAttribute('readonly');
                 document.getElementById(`save-btn-${productId}`).style.display = 'inline-block';
             }
 
-    // Agregar eventos a cada botón de guardar
-    document.querySelectorAll('.save-btn').forEach(button => {
-        button.addEventListener('click', function(event) {
-            const productId = event.target.id.split('-')[2];  
-            const form = document.getElementById(`form-${productId}`);
+            document.querySelectorAll('.save-btn').forEach(button => {
+                button.addEventListener('click', function(event) {
+                    const productId = event.target.id.split('-')[2];  
+                    const form = document.getElementById(`form-${productId}`);
 
-            // Enviar el formulario
-            form.submit();
-        });
-    });
+                    form.submit();
+                });
+            });
 
+            function saveChanges() {
+                const inputs = document.querySelectorAll('.dashboard-card .form-group input, .dashboard-card .form-group select, .dashboard-card .form-group textarea');
+                const data = {};
 
-// Función para guardar los cambios
-function saveChanges() {
-    const inputs = document.querySelectorAll('.form-group input, .form-group select, .form-group textarea');
-    const data = {};
+                inputs.forEach(input => {
+                    const name = input.name;
+                    const value = input.value;
+                    data[name] = value;
+                });
 
-    inputs.forEach(input => {
-        const name = input.name;
-        const value = input.value;
-        data[name] = value;
-    });
+                console.log('Datos guardados:', data);
 
-    // Aquí podrías hacer una petición AJAX o fetch para enviar los datos al backend
-    console.log('Datos guardados:', data);
+                inputs.forEach(input => {
+                    input.setAttribute('readonly', 'true');
+                    input.style.border = 'none';
+                });
 
-    // Simulación de que los datos se han guardado y deshabilitar edición
-    inputs.forEach(input => {
-        input.setAttribute('readonly', 'true');
-        input.style.border = 'none'; // Quitar el borde de los inputs después de guardar
-    });
+                document.getElementById('save-btn').style.display = 'none';
+            }
 
-    document.getElementById('save-btn').style.display = 'none'; // Ocultar botón de guardar
-}
-
-// Agregar el evento de clic al botón de guardar
-document.getElementById('save-btn').addEventListener('click', saveChanges);
-
-</script>
+            document.querySelectorAll('.save-btn').forEach(button => {
+                button.addEventListener('click', saveChanges);
+            });
+        </script>
     </main>
 </body>
 </html>
