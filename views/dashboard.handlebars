@@ -38,48 +38,37 @@
                 <button type="submit" class="btn primary-btn">Crear Producto</button>
             </form>
         </section>
-<section class="product-management-section">
-    <h2 class="section-title">Gestión de Productos</h2>
-    <div class="products-grid">
-        {{#each products}}
-        <div class="product-card" id="product-{{this._id}}">
-            <form action="/products/{{this._id}}/update?_method=PUT" method="POST" class="product-form" id="form-{{this._id}}">
-                <input type="hidden" name="_method" value="PUT">
 
-                <!-- Nombre editable -->
-                <h3>
-                    <input type="text" name="name" value="{{this.name}}" id="name-{{this._id}}" readonly>
-                </h3>
-
-                <!-- Descripción editable -->
-                <p>
-                    <textarea name="description" id="description-{{this._id}}" readonly>{{this.description}}</textarea>
-                </p>
-
-                <!-- Precio editable -->
-                <p>
-                    <strong>Precio:</strong>
-                    <input type="number" name="price" value="{{this.price}}" id="price-{{this._id}}" readonly>
-                </p>
-
-                <!-- Botones de acciones -->
-                <div class="product-actions">
-                    <button type="button" class="btn secondary-btn" onclick="enableEditing('{{this._id}}')">Editar</button>
-                    <button type="submit" class="btn primary-btn save-btn" id="save-btn-{{this._id}}" style="display:none;">Guardar</button>
+        <section class="product-management-section">
+            <h2 class="section-title">Gestión de Productos</h2>
+            <div class="products-grid">
+                {{#each products}}
+                <div class="product-card" id="product-{{this._id}}">
+                    <form action="/products/{{this._id}}/update?_method=PUT" method="POST" class="product-form" id="form-{{this._id}}">
+                        <input type="hidden" name="_method" value="PUT">
+                        <h3>
+                            <input type="text" name="name" value="{{this.name}}" id="name-{{this._id}}" readonly>
+                        </h3>
+                        <p>
+                            <textarea name="description" id="description-{{this._id}}" readonly>{{this.description}}</textarea>
+                        </p>
+                        <p class="price">
+                            <strong>Precio:</strong>
+                            <input type="number" name="price" value="{{this.price}}" id="price-{{this._id}}" readonly>
+                        </p>
+                        <div class="product-actions">
+                            <button type="button" class="btn secondary-btn" onclick="enableEditing('{{this._id}}')">Editar</button>
+                            <button type="submit" class="btn primary-btn save-btn" id="save-btn-{{this._id}}" style="display:none;">Guardar</button>
+                        </div>
+                    </form>
+                    <form action="/products/{{this._id}}/delete" method="POST" style="display:inline;">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit" class="btn danger-btn">Eliminar</button>
+                    </form>
                 </div>
-            </form>
-
-            <!-- Formulario separado para eliminar producto -->
-            <form action="/products/{{this._id}}/delete" method="POST" style="display:inline;">
-                <input type="hidden" name="_method" value="DELETE">
-                <button type="submit" class="btn danger-btn">Eliminar</button>
-            </form>
-        </div>
-        {{/each}}
-    </div>
-</section>
-
-
+                {{/each}}
+            </div>
+        </section>
 
         {{#ifEquals user.role "admin"}}
         <section class="user-management-section">
@@ -111,18 +100,13 @@
         </section>
         {{/ifEquals}}
 
-        <script>
-
-
-    function enableEditing(productId) {
-        // Habilitar campos editables
-        document.getElementById(`name-${productId}`).removeAttribute('readonly');
-        document.getElementById(`description-${productId}`).removeAttribute('readonly');
-        document.getElementById(`price-${productId}`).removeAttribute('readonly');
-
-        // Mostrar botón de guardar
-        document.getElementById(`save-btn-${productId}`).style.display = 'inline-block';
-    }
+<script>
+           function enableEditing(productId) {
+                document.getElementById(`name-${productId}`).removeAttribute('readonly');
+                document.getElementById(`description-${productId}`).removeAttribute('readonly');
+                document.getElementById(`price-${productId}`).removeAttribute('readonly');
+                document.getElementById(`save-btn-${productId}`).style.display = 'inline-block';
+            }
 
     // Agregar eventos a cada botón de guardar
     document.querySelectorAll('.save-btn').forEach(button => {
