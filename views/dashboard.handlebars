@@ -38,8 +38,7 @@
                 <button type="submit" class="btn primary-btn">Crear Producto</button>
             </form>
         </section>
-
-       <section class="product-management-section">
+<section class="product-management-section">
     <h2 class="section-title">Gestión de Productos</h2>
     <div class="products-grid">
         {{#each products}}
@@ -66,7 +65,7 @@
                 <!-- Botones de acciones -->
                 <div class="product-actions">
                     <button type="button" class="btn secondary-btn" onclick="enableEditing('{{this._id}}')">Editar</button>
-                    <button type="submit" class="btn primary-btn" style="display:none;" id="save-btn-{{this._id}}">Guardar</button>
+                    <button type="submit" class="btn primary-btn save-btn" id="save-btn-{{this._id}}" style="display:none;">Guardar</button>
                 </div>
             </form>
 
@@ -79,6 +78,7 @@
         {{/each}}
     </div>
 </section>
+
 
 
         {{#ifEquals user.role "admin"}}
@@ -113,15 +113,28 @@
 
         <script>
 
+
     function enableEditing(productId) {
         // Habilitar campos editables
         document.getElementById(`name-${productId}`).removeAttribute('readonly');
         document.getElementById(`description-${productId}`).removeAttribute('readonly');
         document.getElementById(`price-${productId}`).removeAttribute('readonly');
-        
+
         // Mostrar botón de guardar
         document.getElementById(`save-btn-${productId}`).style.display = 'inline-block';
     }
+
+    // Agregar eventos a cada botón de guardar
+    document.querySelectorAll('.save-btn').forEach(button => {
+        button.addEventListener('click', function(event) {
+            const productId = event.target.id.split('-')[2];  
+            const form = document.getElementById(`form-${productId}`);
+
+            // Enviar el formulario
+            form.submit();
+        });
+    });
+
 
 // Función para guardar los cambios
 function saveChanges() {
