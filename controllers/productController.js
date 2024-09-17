@@ -59,12 +59,14 @@ export const updateProduct = async (req, res) => {
 
         if (!product) return res.status(404).render('error', { message: 'Producto no encontrado' });
 
+        // Actualizar los campos con los valores recibidos
         product.name = name || product.name;
         product.description = description || product.description;
         product.price = price || product.price;
 
         await product.save();
-        res.redirect('/dashboard');
+
+        res.redirect('/dashboard');  
     } catch (err) {
         console.error('Error al actualizar el producto:', err);
         res.status(500).render('error', { message: 'Error al actualizar el producto' });

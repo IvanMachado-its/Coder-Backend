@@ -11,7 +11,7 @@ router.get('/', (req, res, next) => renderProducts(req, res, next, 'products', '
 // Crear un nuevo producto (admin o premium)
 router.post('/', isAuthenticated, isAdminOrPremium, createProduct);
 
-// Editar un producto (admin o premium)
+// routes/productRoutes.js
 router.put('/:id', isAuthenticated, isAdminOrPremium, updateProduct);
 
 // Eliminar un producto (admin o premium)
