@@ -154,38 +154,6 @@ app.get('/search', async (req, res) => {
     }
 });
 
-// Ruta para agregar productos al carrito
-app.post('/cart/add', async (req, res) => {
-    const { productId, quantity } = req.body;
-
-    try {
-        // Obtener el carrito del usuario (o crear uno nuevo si no existe)
-        let cart = req.session.cart || [];
-
-        // Buscar si el producto ya está en el carrito
-        const existingProductIndex = cart.findIndex(item => item.productId === productId);
-
-        if (existingProductIndex > -1) {
-            // Si el producto ya está en el carrito, actualizamos la cantidad
-            cart[existingProductIndex].quantity += parseInt(quantity, 10);
-        } else {
-            // Si no, añadimos el nuevo producto al carrito
-            cart.push({ productId, quantity: parseInt(quantity, 10) });
-        }
-
-        // Guardar el carrito actualizado en la sesión
-        req.session.cart = cart;
-
-        // Responder con el mensaje de éxito y la cantidad total de artículos en el carrito
-        res.json({
-            message: 'Producto añadido al carrito!',
-            cartItemCount: cart.reduce((total, item) => total + item.quantity, 0),
-        });
-    } catch (err) {
-        console.error('Error al añadir producto al carrito:', err);
-        res.status(500).json({ message: 'Error al añadir producto al carrito.' });
-    }
-});
 
 
 // Definición de las rutas para las vistas
