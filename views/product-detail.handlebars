@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <main class="container">
+        <h1>{{product.name}}</h1>
+        <div class="product-detail">
+            <p>{{product.description}}</p>
+            <p class="price">Precio: ${{product.price}}</p>
+            <form class="add-to-cart-form" method="POST" action="/cart/add">
+                <input type="hidden" name="productId" value="{{product._id}}">
+                <label for="quantity">Cantidad:</label>
+                <input type="number" name="quantity" value="1" min="1" class="quantity-input">
+                <button type="submit" class="btn primary-btn">Añadir al Carrito</button>
+            </form>
+        </div>
+    </main>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        document.querySelector('.add-to-cart-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = {
+                productId: formData.get('productId'),
+                quantity: formData.get('quantity')
+            };
+
+            const response = await fetch('/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                const notification = document.getElementById('notification');
+                notification.style.display = 'block';
+                notification.textContent = result.message;
+
+                const cartCount = document.getElementById('cart-count');
+                cartCount.textContent = result.cart.length;
+
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            } else {
+                console.error('Error al agregar al carrito');
+            }
+        });
+    </script>
+</body>
+</html>

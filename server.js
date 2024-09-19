@@ -127,7 +127,12 @@ app.post('/create-checkout-session', async (req, res) => {
     }
   });
   
-  
+  // Ruta para mostrar el detalle de un producto
+app.get('/products/:id', async (req, res) => {
+    const productId = req.params.id;
+    await renderProducts(req, res, null, 'product-detail', 'Detalles del Producto', productId);
+});
+
 
 // Definición de las rutas para las vistas
 app.get('/', (req, res, next) => renderProducts(req, res, next, 'index', 'Tienda Online'));
