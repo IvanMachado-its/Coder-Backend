@@ -12,17 +12,19 @@
     <h1 class="main-title">Productos</h1>
     <div class="products-grid">
         {{#each products}}
-        <div class="product-card">
-            <h3>{{this.name}}</h3>
-            <p>{{this.description}}</p>
-            <p class="price">Precio: ${{this.price}}</p>
-            <form class="add-to-cart-form" method="POST" action="/cart/add">
-                <input type="hidden" name="productId" value="{{this._id}}">
-                <label for="quantity">Cantidad:</label>
-                <input type="number" name="quantity" value="1" min="1" class="quantity-input">
-                <button type="submit" class="btn primary-btn">Añadir al Carrito</button>
-            </form>
-        </div>
+        <a href="/products/{{this._id}}" class="product-link">
+            <div class="product-card">
+                <h3>{{this.name}}</h3>
+                <p>{{this.description}}</p>
+                <p class="price">Precio: ${{this.price}}</p>
+                <form class="add-to-cart-form" method="POST" action="/cart/add">
+                    <input type="hidden" name="productId" value="{{this._id}}">
+                    <label for="quantity">Cantidad:</label>
+                    <input type="number" name="quantity" value="1" min="1" class="quantity-input">
+                    <button type="submit" class="btn primary-btn">Añadir al Carrito</button>
+                </form>
+            </div>
+        </a>
         {{/each}}
     </div>
 </main>
