@@ -15,7 +15,7 @@ import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 import User from './models/User.js';
 import { isAuthenticated, isAdmin } from './middlewares/authMiddleware.js';
-import { getUsers, updateUserRole, deleteUser, deleteInactiveUsers } from './controllers/userController.js';
+import { getUsers, updateUserRole, deleteUser, deleteInactiveUsers, } from './controllers/userController.js';
 import { registerUser, loginUser, logoutUser } from './controllers/authController.js';
 import { renderProducts, deleteProduct, updateProduct } from './controllers/productController.js';
 
@@ -106,6 +106,7 @@ app.use(async (req, res, next) => {
     next();
 });
 
+
 app.post('/create-checkout-session', async (req, res) => {
     try {
       const session = await stripe.checkout.sessions.create({
@@ -131,6 +132,59 @@ app.post('/create-checkout-session', async (req, res) => {
 app.get('/products/:id', async (req, res) => {
     const productId = req.params.id;
     await renderProducts(req, res, null, 'product-detail', 'Detalles del Producto', productId);
+});
+// Ruta para manejar las búsquedas
+app.get('/search', async (req, res) => {
+    try {
+        const query = req.query.q;
+        if (!query) return res.status(400).json([]);
+
+        // Búsqueda simple en el nombre y descripción del producto
+        const products = await Product.find({
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { description: { $regex: query, $options: 'i' } }
+            ]
+        }).select('name _id').limit(10).lean();
+
+        res.json(products);
+    } catch (err) {
+        console.error('Error en la búsqueda:', err);
+        res.status(500).json([]);
+    }
+});
+
+// Ruta para agregar productos al carrito
+app.post('/cart/add', async (req, res) => {
+    const { productId, quantity } = req.body;
+
+    try {
+        // Obtener el carrito del usuario (o crear uno nuevo si no existe)
+        let cart = req.session.cart || [];
+
+        // Buscar si el producto ya está en el carrito
+        const existingProductIndex = cart.findIndex(item => item.productId === productId);
+
+        if (existingProductIndex > -1) {
+            // Si el producto ya está en el carrito, actualizamos la cantidad
+            cart[existingProductIndex].quantity += parseInt(quantity, 10);
+        } else {
+            // Si no, añadimos el nuevo producto al carrito
+            cart.push({ productId, quantity: parseInt(quantity, 10) });
+        }
+
+        // Guardar el carrito actualizado en la sesión
+        req.session.cart = cart;
+
+        // Responder con el mensaje de éxito y la cantidad total de artículos en el carrito
+        res.json({
+            message: 'Producto añadido al carrito!',
+            cartItemCount: cart.reduce((total, item) => total + item.quantity, 0),
+        });
+    } catch (err) {
+        console.error('Error al añadir producto al carrito:', err);
+        res.status(500).json({ message: 'Error al añadir producto al carrito.' });
+    }
 });
 
 
