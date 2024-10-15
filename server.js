@@ -18,6 +18,12 @@ import { isAuthenticated, isAdmin } from './middlewares/authMiddleware.js';
 import { getUsers, updateUserRole, deleteUser, deleteInactiveUsers, } from './controllers/userController.js';
 import { registerUser, loginUser, logoutUser } from './controllers/authController.js';
 import { renderProducts, deleteProduct, updateProduct } from './controllers/productController.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import upload from './middlewares/upload.js'; 
+import fs from 'fs';
+
+
 
 dotenv.config(); // Cargar variables de entorno desde .env
 
@@ -68,8 +74,12 @@ const hbs = create({
         allowProtoMethodsByDefault: true,
     }
 });
-
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
 app.engine('handlebars', hbs.engine);
 app.set('view engine', 'handlebars');
 app.set('views', './views');
@@ -81,7 +91,7 @@ app.use(passport.session());
 // Middleware para parsear JSON y formularios
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Middleware para soportar PUT y DELETE en formularios HTML
 app.use(methodOverride('_method'));
 

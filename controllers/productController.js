@@ -1,6 +1,7 @@
 import Product from '../models/Product.js';
 import User from '../models/User.js';
 import sgMail from '@sendgrid/mail';
+import upload from '../middlewares/upload.js'; 
 
 // Configuración de SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -24,54 +25,73 @@ export const renderProducts = async (req, res, next, viewName, title, productId 
 };
 
 // Crear un nuevo producto
-export const createProduct = async (req, res) => {
-    try {
-        if (!req.user) {
-            return res.status(401).render('error', { message: 'Debe estar autenticado para crear un producto' });
+export const createProduct = [
+    upload.single('image'),  
+    async (req, res) => {
+        try {
+            if (!req.user) {
+                return res.status(401).render('error', { message: 'Debe estar autenticado para crear un producto' });
+            }
+
+            const { name, description, price, category, stock } = req.body;
+
+            if (!name || !description || !price || !category) {
+                return res.status(400).render('error', { message: 'Todos los campos obligatorios deben estar completos' });
+            }
+
+            const product = new Product({
+                name,
+                description,
+                price,
+                category,
+                stock: stock || 0,
+                imageUrl: req.file ? `/uploads/${req.file.filename}` : '',
+                user: req.user._id,
+            });
+
+            await product.save();
+            res.status(201).redirect('/dashboard');
+        } catch (err) {
+            console.error('Error en createProduct:', err);
+            res.status(500).render('error', { message: 'Error al crear el producto' });
         }
-
-        const { name, description, price } = req.body;
-
-        // Validación básica
-        if (!name || !description || !price) {
-            return res.status(400).render('error', { message: 'Todos los campos son obligatorios' });
-        }
-
-        // Crear el producto asignando el usuario correctamente
-        const product = new Product({ name, description, price, user: req.user._id });
-        await product.save();
-        res.status(201).redirect('/dashboard');
-    } catch (err) {
-        console.error('Error en createProduct:', err);
-        res.status(500).render('error', { message: 'Error al crear el producto' });
     }
-};
+];
+export const updateProduct = [
+    upload.single('image'),  
+    async (req, res) => {
+        try {
+            if (!req.user) {
+                return res.status(401).render('error', { message: 'Debe estar autenticado para actualizar un producto' });
+            }
 
-// Actualizar un producto
-export const updateProduct = async (req, res) => {
-    try {
-        if (!req.user) {
-            return res.status(401).render('error', { message: 'Debe estar autenticado para actualizar un producto' });
+            const { name, description, price, category, stock } = req.body;
+            const product = await Product.findById(req.params.id);
+
+            if (!product) return res.status(404).render('error', { message: 'Producto no encontrado' });
+
+            // Actualizar los campos del producto
+            product.name = name || product.name;
+            product.description = description || product.description;
+            product.price = price || product.price;
+            product.category = category || product.category;
+            product.stock = stock !== undefined ? stock : product.stock;
+
+            if (req.file) {
+                product.imageUrl = `/uploads/${req.file.filename}`;  // Actualizar la imagen si se subió una nueva
+            }
+
+            await product.save();
+
+            res.redirect('/dashboard');
+        } catch (err) {
+            console.error('Error al actualizar el producto:', err);
+            res.status(500).render('error', { message: 'Error al actualizar el producto' });
         }
-
-        const { name, description, price } = req.body;
-        const product = await Product.findById(req.params.id);
-
-        if (!product) return res.status(404).render('error', { message: 'Producto no encontrado' });
-
-        // Actualizar los campos con los valores recibidos
-        product.name = name || product.name;
-        product.description = description || product.description;
-        product.price = price || product.price;
-
-        await product.save();
-
-        res.redirect('/dashboard');  // Volver al dashboard tras la edición
-    } catch (err) {
-        console.error('Error al actualizar el producto:', err);
-        res.status(500).render('error', { message: 'Error al actualizar el producto' });
     }
-};
+];
+
+
 
 
 

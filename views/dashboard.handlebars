@@ -7,22 +7,23 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <header class="admin-header">
+   <center> <header class="admin-header">
         <h1>Panel de Control</h1>
         <div class="user-info">
-            <p><strong>Nombre:</strong> {{user.name}}</p>
+            <p><strong>Usuario:</strong> {{user.name}}</p>
             <p><strong>Email:</strong> {{user.email}}</p>
         </div>
-    </header>
+    </header></center>
 
     <main class="container">
         <section class="welcome-section">
             <h2 class="section-title">Bienvenido, {{user.name}}!</h2>
         </section>
 
+        <!-- Sección para crear un producto -->
         <section class="create-product-section">
             <h2 class="section-title">Crear Producto</h2>
-            <form action="/api/products" method="POST" class="product-form">
+            <form action="/api/products" method="POST" enctype="multipart/form-data" class="product-form">
                 <div class="form-group">
                     <label for="name">Nombre del Producto</label>
                     <input type="text" id="name" name="name" required>
@@ -35,47 +36,77 @@
                     <label for="price">Precio</label>
                     <input type="number" id="price" name="price" required>
                 </div>
+                <div class="form-group">
+                    <label for="category">Categoría</label>
+                    <input type="text" id="category" name="category" required>
+                </div>
+                <div class="form-group">
+                    <label for="stock">Stock</label>
+                    <input type="number" id="stock" name="stock" value="0" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="image">Imagen del Producto</label>
+                    <input type="file" id="image" name="image">
+                </div>
                 <button type="submit" class="btn primary-btn">Crear Producto</button>
             </form>
         </section>
 
+        <!-- Gestión de productos -->
         <section class="product-management-section">
             <h2 class="section-title">Gestión de Productos</h2>
             <div class="dashboard-grid">
                 {{#each products}}
-                <div class="dashboard-card" id="product-{{this._id}}">
-                    <form action="/products/{{this._id}}/update?_method=PUT" method="POST" class="dashboard-form" id="form-{{this._id}}">
-                        <input type="hidden" name="_method" value="PUT">
+<div class="dashboard-card" id="product-{{this._id}}">
+    <form action="/products/{{this._id}}/update?_method=PUT" method="POST" enctype="multipart/form-data" class="dashboard-form" id="form-{{this._id}}">
+        <input type="hidden" name="_method" value="PUT">
 
-                        <h3>
-                            <input type="text" name="name" value="{{this.name}}" id="name-{{this._id}}" readonly>
-                        </h3>
+        <h3>
+            <input type="text" name="name" value="{{this.name}}" id="name-{{this._id}}" readonly>
+        </h3>
 
-                        <p>
-                            <textarea name="description" id="description-{{this._id}}" readonly>{{this.description}}</textarea>
-                        </p>
+        <p>
+            <textarea name="description" id="description-{{this._id}}" readonly>{{this.description}}</textarea>
+        </p>
 
-                        <p>
-                            <strong>Precio:</strong>
-                            <input type="number" name="price" value="{{this.price}}" id="price-{{this._id}}" readonly>
-                        </p>
+        <p>
+            <strong>Precio:</strong>
+            <input type="number" name="price" value="{{this.price}}" id="price-{{this._id}}" readonly>
+        </p>
 
-                        <div class="product-actions">
-                            <button type="button" class="btn secondary-btn" onclick="enableEditing('{{this._id}}')">Editar</button>
-                            <button type="submit" class="btn primary-btn save-btn" id="save-btn-{{this._id}}" style="display:none;">Guardar</button>
-                        </div>
-                    </form>
+        <p>
+            <strong>Categoría:</strong>
+            <input type="text" name="category" value="{{this.category}}" id="category-{{this._id}}" readonly>
+        </p>
 
-                    <form action="/products/{{this._id}}/delete" method="POST" style="display:inline;">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="btn danger-btn">Eliminar</button>
-                    </form>
-                </div>
+        <p>
+            <strong>Stock:</strong>
+            <input type="number" name="stock" value="{{this.stock}}" id="stock-{{this._id}}" readonly>
+        </p>
+
+        <div class="form-group">
+            <label for="image-{{this._id}}">Cambiar Imagen</label>
+            <input type="file" id="image-{{this._id}}" name="image" style="display:none;"> <!-- Oculto por defecto -->
+        </div>
+
+        <div class="product-actions">
+            <button type="button" class="btn secondary-btn" onclick="enableEditing('{{this._id}}')">Editar</button>
+            <button type="submit" class="btn primary-btn save-btn" id="save-btn-{{this._id}}" style="display:none;">Guardar</button>
+        </div>
+    </form>
+
+    <form action="/products/{{this._id}}/delete?_method=DELETE" method="POST" style="display:inline;">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit" class="btn danger-btn">Eliminar</button>
+    </form>
+</div>
+
                 {{/each}}
             </div>
         </section>
 
         {{#ifEquals user.role "admin"}}
+        <!-- Gestión de usuarios para administradores -->
         <section class="user-management-section">
             <h2 class="section-title">Gestión de Usuarios</h2>
             <ul class="user-list">
@@ -85,8 +116,7 @@
                     <p><strong>Correo:</strong> {{this.email}}</p>
                     <p><strong>Rol:</strong> {{this.role}}</p>
                     <div class="user-actions">
-                        <form action="/users/{{this._id}}/role" method="POST">
-                            <input type="hidden" name="_method" value="PUT">
+                        <form action="/users/{{this._id}}/role?_method=PUT" method="POST">
                             <select name="role" required>
                                 <option value="user" {{#ifEquals this.role "user"}}selected{{/ifEquals}}>Usuario</option>
                                 <option value="admin" {{#ifEquals this.role "admin"}}selected{{/ifEquals}}>Administrador</option>
@@ -94,8 +124,7 @@
                             </select>
                             <button type="submit" class="btn primary-btn">Actualizar Rol</button>
                         </form>
-                        <form action="/users/{{this._id}}/delete" method="POST">
-                            <input type="hidden" name="_method" value="DELETE">
+                        <form action="/users/{{this._id}}/delete?_method=DELETE" method="POST">
                             <button type="submit" class="btn danger-btn">Eliminar</button>
                         </form>
                     </div>
@@ -105,47 +134,37 @@
         </section>
         {{/ifEquals}}
 
-        <script>
-            function enableEditing(productId) {
-                document.getElementById(`name-${productId}`).removeAttribute('readonly');
-                document.getElementById(`description-${productId}`).removeAttribute('readonly');
-                document.getElementById(`price-${productId}`).removeAttribute('readonly');
-                document.getElementById(`save-btn-${productId}`).style.display = 'inline-block';
-            }
+   <script>
+    function enableEditing(productId) {
+        // Habilitar todos los campos para edición
+        document.getElementById('name-' + productId).removeAttribute('readonly');
+        document.getElementById('description-' + productId).removeAttribute('readonly');
+        document.getElementById('price-' + productId).removeAttribute('readonly');
+        document.getElementById('category-' + productId).removeAttribute('readonly');
+        document.getElementById('stock-' + productId).removeAttribute('readonly');
 
-            document.querySelectorAll('.save-btn').forEach(button => {
-                button.addEventListener('click', function(event) {
-                    const productId = event.target.id.split('-')[2];  
-                    const form = document.getElementById(`form-${productId}`);
+        // Mostrar el campo de imagen solo si el usuario quiere subir una nueva
+        const imageField = document.getElementById('image-' + productId);
+        if (imageField) {
+            imageField.style.display = 'block';
+        }
 
-                    form.submit();
-                });
-            });
+        // Mostrar el botón de guardar
+        document.getElementById('save-btn-' + productId).style.display = 'inline-block';
+    }
 
-            function saveChanges() {
-                const inputs = document.querySelectorAll('.dashboard-card .form-group input, .dashboard-card .form-group select, .dashboard-card .form-group textarea');
-                const data = {};
+    // Función para manejar el envío del formulario
+    document.querySelectorAll('.save-btn').forEach(button => {
+        button.addEventListener('click', function(event) {
+            const productId = event.target.id.split('-')[2];  // Obtener el id del producto desde el id del botón
+            const form = document.getElementById('form-' + productId);
 
-                inputs.forEach(input => {
-                    const name = input.name;
-                    const value = input.value;
-                    data[name] = value;
-                });
+            // Realizar validaciones o acciones adicionales si es necesario
+            form.submit();  // Enviar el formulario para actualizar el producto
+        });
+    });
+</script>
 
-                console.log('Datos guardados:', data);
-
-                inputs.forEach(input => {
-                    input.setAttribute('readonly', 'true');
-                    input.style.border = 'none';
-                });
-
-                document.getElementById('save-btn').style.display = 'none';
-            }
-
-            document.querySelectorAll('.save-btn').forEach(button => {
-                button.addEventListener('click', saveChanges);
-            });
-        </script>
     </main>
 </body>
 </html>

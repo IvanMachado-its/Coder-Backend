@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda Online</title>
+    <title>{{title}}</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
@@ -14,12 +14,14 @@
         {{#each products}}
         <div class="product-card" data-name="{{this.name}}" data-description="{{this.description}}">
             <h3>{{this.name}}</h3>
+            <img src="{{this.imageUrl}}" alt="{{this.name}}" class="product-image"> <!-- Mostrar imagen -->
             <p>{{this.description}}</p>
             <p class="price">Precio: ${{this.price}}</p>
+            <p class="stock">Stock: {{this.stock}} unidades</p> <!-- Mostrar stock -->
             <form class="add-to-cart-form" method="POST" action="/cart/add">
                 <input type="hidden" name="productId" value="{{this._id}}">
-                <label for="quantity">Cantidad:</label>
-                <input type="number" name="quantity" value="1" min="1" class="quantity-input">
+                <label for="quantity-{{this._id}}">Cantidad:</label>
+                <input type="number" name="quantity" id="quantity-{{this._id}}" value="1" min="1" class="quantity-input">
                 <button type="submit" class="btn primary-btn">Añadir al Carrito</button>
             </form>
         </div>
@@ -27,48 +29,44 @@
     </div>
 </main>
 
-<div id="notification" class="notification"></div>
+<div id="notification" class="notification" style="display:none;"></div>
 
+<script>
+    document.querySelectorAll('.add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();  // Prevenir el comportamiento por defecto del formulario
 
+            const formData = new FormData(form);
+            const data = {
+                productId: formData.get('productId'),
+                quantity: formData.get('quantity')
+            };
 
-
-    <script>
-        document.querySelectorAll('.add-to-cart-form').forEach(form => {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();  // Prevenir el comportamiento por defecto del formulario
-
-                const formData = new FormData(form);
-                const data = {
-                    productId: formData.get('productId'),
-                    quantity: formData.get('quantity')
-                };
-
-                const response = await fetch('/cart/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data),
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    const notification = document.getElementById('notification');
-                    notification.style.display = 'block';
-                    notification.textContent = result.message;
-
-                    // Actualizar el contador del carrito
-                    const cartCount = document.getElementById('cart-count');
-                    cartCount.textContent = result.cart.length;
-
-                    setTimeout(() => {
-                        notification.style.display = 'none';
-                    }, 3000);
-                } else {
-                    console.error('Error al agregar al carrito');
-                }
+            const response = await fetch('/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
             });
+
+            if (response.ok) {
+                const result = await response.json();
+                const notification = document.getElementById('notification');
+                notification.style.display = 'block';
+                notification.textContent = result.message;
+
+                const cartCount = document.getElementById('cart-count');
+                cartCount.textContent = result.cart.length;
+
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            } else {
+                console.error('Error al agregar al carrito');
+            }
         });
-    </script>
+    });
+</script>
 </body>
 </html>

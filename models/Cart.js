@@ -1,4 +1,3 @@
-// models/Cart.js
 import mongoose from 'mongoose';
 
 const cartSchema = new mongoose.Schema({
@@ -21,12 +20,18 @@ const cartSchema = new mongoose.Schema({
     }],
     totalPrice: {
         type: Number,
-        default: 0,  // Asegúrate de que totalPrice esté inicializado como 0
+        default: 0,
+    },
+    itemCount: {  // Nuevo campo para contar el total de productos
+        type: Number,
+        default: 0,
     }
 }, {
     timestamps: true
 });
 
+// Creación del modelo basado en el esquema
 const Cart = mongoose.model('Cart', cartSchema);
 
+// Exportación por defecto del modelo
 export default Cart;
